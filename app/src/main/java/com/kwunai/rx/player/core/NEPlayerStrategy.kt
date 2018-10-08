@@ -174,6 +174,14 @@ class NEPlayerStrategy : PlayerStrategy() {
         }
     }
 
+    override fun onActivityStop() {
+
+    }
+
+    override fun onActivityResume() {
+
+    }
+
     /**
      * 停止播放
      */
@@ -384,7 +392,7 @@ class NEPlayerStrategy : PlayerStrategy() {
     /**
      * 进度定时器开始
      */
-    private fun startVodTimer() {
+    override fun startVodTimer() {
         stopVodTimer()
         vodTimer = Timer("TICKER_TIMER")
         vodTimerTask = object : TimerTask() {
@@ -392,14 +400,13 @@ class NEPlayerStrategy : PlayerStrategy() {
                 onVodTickerTimer()
             }
         }
-        vodTimer!!.scheduleAtFixedRate(vodTimerTask, 1000, 1000)
-        Logger.d("start vod timer...")
+        vodTimer!!.schedule(vodTimerTask, 0, 1000)
     }
 
     /**
      * 进度定时器结束
      */
-    private fun stopVodTimer() {
+    override fun stopVodTimer() {
         if (vodTimerTask != null) {
             vodTimerTask!!.cancel()
             vodTimerTask = null

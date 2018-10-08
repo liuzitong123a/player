@@ -6,6 +6,12 @@ import android.content.ContextWrapper
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.view.ContextThemeWrapper
 import java.util.*
+import android.R.attr.y
+import android.os.Build
+import android.support.v4.content.ContextCompat.getSystemService
+import android.view.WindowManager
+import android.R.attr.x
+import android.graphics.Point
 
 
 fun stringForTime(timeMs: Long): String {
@@ -53,4 +59,18 @@ fun Context.setRequestedOrientation(orientation: Int) {
 fun Context.dp2px(dpValue: Float): Int {
     val scale = resources.displayMetrics.density
     return (dpValue * scale + 0.5f).toInt()
+}
+
+fun Context.getScreenWidth(): Int {
+    val wm = getSystemService(Context.WINDOW_SERVICE) as WindowManager
+    val point = Point()
+    wm.defaultDisplay.getRealSize(point)
+    return point.x
+}
+
+fun Context.getScreenHeight(): Int {
+    val wm = getSystemService(Context.WINDOW_SERVICE) as WindowManager
+    val point = Point()
+    wm.defaultDisplay.getRealSize(point)
+    return point.y
 }

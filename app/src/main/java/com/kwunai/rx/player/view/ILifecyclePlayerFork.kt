@@ -5,6 +5,7 @@ import android.arch.lifecycle.LifecycleObserver
 import android.arch.lifecycle.LifecycleOwner
 import android.arch.lifecycle.OnLifecycleEvent
 import com.kwunai.rx.player.modal.PlayMode
+import com.kwunai.rx.player.modal.StateInfo
 import org.jetbrains.annotations.NotNull
 
 interface ILifecyclePlayerFork : LifecycleObserver {
@@ -25,11 +26,21 @@ interface ILifecyclePlayerFork : LifecycleObserver {
 
     fun pause()
 
-    fun isPlaying():Boolean
+    fun isPlaying(): Boolean
+
+    fun seekTo(position: Long)
+
+    fun stopTimer()
+
+    fun startTimer()
 
     fun startFullscreenWindow()
 
     fun exitFullscreenWindow()
 
     fun getPlayMode(): PlayMode
+
+    fun getCurrentState(): StateInfo
+
+    fun getDuration(): Long
 }

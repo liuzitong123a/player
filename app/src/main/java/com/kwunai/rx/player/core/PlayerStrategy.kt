@@ -1,6 +1,5 @@
 package com.kwunai.rx.player.core
 
-import com.kwunai.rx.player.modal.PlayerState
 import com.kwunai.rx.player.modal.StateInfo
 import com.kwunai.rx.player.modal.VideoScaleMode
 import com.kwunai.rx.player.view.IRenderViewFork
@@ -14,6 +13,10 @@ abstract class PlayerStrategy {
     abstract fun setUp(url: String)
 
     abstract fun setupRenderView(renderView: IRenderViewFork?, videoScaleMode: VideoScaleMode)
+
+    abstract fun onActivityStop()
+
+    abstract fun onActivityResume()
 
     abstract fun start()
 
@@ -38,4 +41,8 @@ abstract class PlayerStrategy {
     abstract fun getCurrentPosition(): Long
 
     abstract fun getCachedPosition(): Long
+
+    abstract fun startVodTimer()
+
+    abstract fun stopVodTimer()
 }

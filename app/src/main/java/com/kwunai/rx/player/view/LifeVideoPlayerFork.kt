@@ -16,26 +16,34 @@ import com.kwunai.rx.player.ext.bindLifecycle
 import com.kwunai.rx.player.ext.scanForActivity
 import com.kwunai.rx.player.ext.setRequestedOrientation
 import com.kwunai.rx.player.modal.PlayMode
+import com.kwunai.rx.player.modal.StateInfo
 import com.kwunai.rx.player.modal.VideoScaleMode
 import io.reactivex.android.schedulers.AndroidSchedulers
 
-
+/**
+ * 视频播放器的容器类，用于绑定生命周期，监听状态变化
+ */
 class LifeVideoPlayerFork @JvmOverloads constructor(
         context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : FrameLayout(context, attrs, defStyleAttr), ILifecyclePlayerFork {
 
+
+    // 当前播放器屏幕的状态
     private var currentPlayMode = PlayMode.MODE_NORMAL
 
     private var playerStrategy: PlayerStrategy? = null
 
+    // 视频所需要的播放组件
     private val surfaceView by lazy {
         TextureRenderView(context)
     }
 
+    // 视频播放器容器
     private val container: FrameLayout by lazy {
         FrameLayout(context)
     }
 
+    // 视频播放器控制器，处理UI
     private lateinit var controller: VideoControllerFork
 
     init {
@@ -68,27 +76,6 @@ class LifeVideoPlayerFork @JvmOverloads constructor(
         playerStrategy!!.setupRenderView(surfaceView, VideoScaleMode.FIT)
         addSurfaceView()
     }
-
-    override fun onCreate(lifecycleOwner: LifecycleOwner) {
-        playerStrategy!!.subject
-                .observeOn(AndroidSchedulers.mainThread())
-                .bindLifecycle(lifecycleOwner)
-                .subscribe { controller.onPlayCommandChanged(it) }
-    }
-
-    override fun onResume(lifecycleOwner: LifecycleOwner) {
-
-    }
-
-    override fun onStop(lifecycleOwner: LifecycleOwner) {
-
-    }
-
-    override fun onDestroy(lifecycleOwner: LifecycleOwner) {
-        Log.e("lzt", "player onDestroy")
-        releasePlayer()
-    }
-
 
     /**
      * 开始播放
@@ -130,6 +117,32 @@ class LifeVideoPlayerFork @JvmOverloads constructor(
     }
 
     /**
+     * 拖动进度
+     */
+    override fun seekTo(position: Long) {
+        playerStrategy?.seekTo(position)
+    }
+
+    /**
+     * 开始进度回调
+     */
+    override fun startTimer() {
+        playerStrategy?.startVodTimer()
+    }
+
+    /**
+     * 结束进度回调
+     */
+    override fun stopTimer() {
+        playerStrategy?.stopVodTimer()
+    }
+
+    /**
+     * 获取当前视频总长度
+     */
+    override fun getDuration(): Long = playerStrategy?.getDuration() ?: 0
+
+    /**
      * 全屏模式
      */
     override fun startFullscreenWindow() {
@@ -161,6 +174,45 @@ class LifeVideoPlayerFork @JvmOverloads constructor(
         controller.onPlayModeChanged(PlayMode.MODE_NORMAL)
     }
 
-
+    /**
+     * 获取当前屏幕状态
+     */
     override fun getPlayMode(): PlayMode = currentPlayMode
+
+    /**
+     * 获取当前播放器状态
+     */
+    override fun getCurrentState(): StateInfo = playerStrategy!!.getCurrentState()
+
+    /**
+     * 监听生命周期的onCreate方法
+     */
+    override fun onCreate(lifecycleOwner: LifecycleOwner) {
+        playerStrategy!!.subject
+                .observeOn(AndroidSchedulers.mainThread())
+                .bindLifecycle(lifecycleOwner)
+                .subscribe { controller.onPlayCommandChanged(it) }
+    }
+
+    /**
+     * 监听生命周期的onResume方法
+     */
+    override fun onResume(lifecycleOwner: LifecycleOwner) {
+
+    }
+
+    /**
+     * 监听生命周期的onStop方法
+     */
+    override fun onStop(lifecycleOwner: LifecycleOwner) {
+
+    }
+
+    /**
+     * 监听生命周期的onDestroy方法
+     */
+    override fun onDestroy(lifecycleOwner: LifecycleOwner) {
+        Log.e("lzt", "player onDestroy")
+        releasePlayer()
+    }
 }
