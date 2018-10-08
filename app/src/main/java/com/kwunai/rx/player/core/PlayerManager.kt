@@ -33,7 +33,7 @@ object PlayerManager {
         return PlayerDispatcherImpl(context)
     }
 
-    fun configPlayerTest(): PlayerStrategy {
-        return NEPlayerStrategy()
+    fun configPlayerTest(context: Context): PlayerStrategy {
+        return NEPlayerStrategy(context)
     }
 }

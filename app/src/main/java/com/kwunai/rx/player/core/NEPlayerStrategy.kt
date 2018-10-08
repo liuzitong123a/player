@@ -1,5 +1,12 @@
+@file:Suppress("DEPRECATION")
+
 package com.kwunai.rx.player.core
 
+import android.content.Context
+import android.media.AudioAttributes
+import android.media.AudioFocusRequest
+import android.media.AudioManager
+import android.os.Build
 import android.support.annotation.FloatRange
 import android.util.Log
 import android.view.Surface
@@ -15,13 +22,16 @@ import com.orhanobut.logger.Logger
 import java.io.IOException
 import java.util.*
 
+
 /**
  * 网易播放器，基于2.0.0版本的实现
  * 可以自定义实现PlayerStrategy
  * 如SystemPlayerStrategy（系统MediaPlayer），IJKPlayerStrategy（ijkPlayer）
  * @author lzt
  */
-class NEPlayerStrategy : PlayerStrategy() {
+class NEPlayerStrategy(
+        private val context: Context
+) : PlayerStrategy() {
 
     // 当前正在播放的url
     private lateinit var mCurrentPath: String
@@ -33,6 +43,9 @@ class NEPlayerStrategy : PlayerStrategy() {
     private var currentState = PlayerState.IDLE
     // 播放导致状态的code码
     private var cause: Int = 0
+    // 音频管理器
+    private var mAudioManager: AudioManager? = null
+    private var audioFocusRequest: AudioFocusRequest? = null
     // 以下六个参数为视频视图显示大小相关
     private var renderView: IRenderViewFork? = null
     private var scaleMode = VideoScaleMode.NONE
@@ -62,6 +75,29 @@ class NEPlayerStrategy : PlayerStrategy() {
         renderView?.let {
             this.renderView = it
             this.scaleMode = videoScaleMode
+        }
+    }
+
+    /**
+     * 初始化音频管理器
+     */
+    private fun initAudio() {
+        if (mAudioManager == null) {
+            mAudioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            if (mAudioManager != null) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    val audioAttributes = AudioAttributes.Builder()
+                            .setLegacyStreamType(AudioManager.STREAM_MUSIC)
+                            .build()
+                    audioFocusRequest = AudioFocusRequest
+                            .Builder(AudioManager.AUDIOFOCUS_GAIN)
+                            .setAudioAttributes(audioAttributes)
+                            .build()
+                    mAudioManager!!.requestAudioFocus(audioFocusRequest)
+                } else {
+                    mAudioManager!!.requestAudioFocus(null, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN)
+                }
+            }
         }
     }
 
@@ -138,6 +174,7 @@ class NEPlayerStrategy : PlayerStrategy() {
             }
         }
 
+        initAudio()
         initPlayer()
     }
 
@@ -174,19 +211,27 @@ class NEPlayerStrategy : PlayerStrategy() {
         }
     }
 
-    override fun onActivityStop() {
-
-    }
-
     override fun onActivityResume() {
 
     }
+
+    override fun onActivityStop() {
+        pause()
+    }
+
 
     /**
      * 停止播放
      */
     override fun stop() {
         Log.e("lzt", "player stop")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            mAudioManager?.abandonAudioFocusRequest(audioFocusRequest)
+        } else {
+            mAudioManager?.abandonAudioFocus(null)
+        }
+        audioFocusRequest = null
+        mAudioManager = null
         stopVodTimer()
         mMediaPlayer?.let {
             it.setSurface(null)

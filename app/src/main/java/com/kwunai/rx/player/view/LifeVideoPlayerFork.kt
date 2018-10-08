@@ -71,7 +71,7 @@ class LifeVideoPlayerFork @JvmOverloads constructor(
      * 外层配置
      */
     fun createPlayerConfig(path: String) {
-        playerStrategy = PlayerManager.configPlayerTest()
+        playerStrategy = PlayerManager.configPlayerTest(context)
         playerStrategy!!.setUp(path)
         playerStrategy!!.setupRenderView(surfaceView, VideoScaleMode.FIT)
         addSurfaceView()
