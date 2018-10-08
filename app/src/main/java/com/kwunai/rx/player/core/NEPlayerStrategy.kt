@@ -10,7 +10,9 @@ import android.os.Build
 import android.support.annotation.FloatRange
 import android.util.Log
 import android.view.Surface
+import android.view.WindowManager
 import com.kwunai.rx.player.ext.no
+import com.kwunai.rx.player.ext.scanForActivity
 import com.kwunai.rx.player.ext.yes
 import com.kwunai.rx.player.modal.*
 import com.kwunai.rx.player.view.IRenderViewFork
@@ -32,6 +34,10 @@ import java.util.*
 class NEPlayerStrategy(
         private val context: Context
 ) : PlayerStrategy() {
+
+    companion object {
+        private const val BACKGROUND_RESET_TIME = (30 * 60 * 1000).toLong()
+    }
 
     // 当前正在播放的url
     private lateinit var mCurrentPath: String
@@ -56,6 +62,10 @@ class NEPlayerStrategy(
     // 播放进度定时器
     private var vodTimer: Timer? = null
     private var vodTimerTask: TimerTask? = null
+    // app是否在前台(默认在前台)
+    private var foreground = true
+    // 退到后台的时间点
+    private var backgroundTime: Long = 0
 
     init {
         setCurrentState(PlayerState.IDLE, 0)
@@ -173,7 +183,8 @@ class NEPlayerStrategy(
                 resetPlayer()
             }
         }
-
+        // 设置常亮
+        scanForActivity(context)?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         initAudio()
         initPlayer()
     }
@@ -213,10 +224,40 @@ class NEPlayerStrategy(
 
     override fun onActivityResume() {
 
+        Log.e("lzt", "activity on resume")
+
+        // 回到前台
+        foreground = true
+
+        mMediaPlayer?.let {
+            val state = getCurrentState().state
+            if (System.currentTimeMillis() - backgroundTime >= BACKGROUND_RESET_TIME) {
+                Log.e("lzt", "force reset player, as app on background for a long time! ")
+                savePlayerState()
+                resetPlayer()
+            } else if (state === PlayerState.PLAYING && !it.isPlaying) {
+                // 当前状态与播放器底层状态不一致，立即重置。
+                Log.e("lzt", "force reset player, as current state is PLAYING, but player engine is not playing!")
+                savePlayerState()
+                resetPlayer()
+            }
+        }
+        // 重新恢复拉流视频
+        recoverPlayer()
     }
 
     override fun onActivityStop() {
-        pause()
+        Log.e("lzt", "activity on stop")
+        // 切到后台
+        foreground = false
+        backgroundTime = System.currentTimeMillis()
+        mMediaPlayer?.let {
+            (it.isPlaying && it.duration > 0).yes {
+                setCurrentState(PlayerState.PAUSED, CauseCode.CODE_VIDEO_PAUSED_BY_BACKGROUND)
+                stopVodTimer()
+                it.pause()
+            }
+        }
     }
 
 
@@ -307,8 +348,8 @@ class NEPlayerStrategy(
     private fun resetPlayer() {
         stopVodTimer()
         mMediaPlayer?.let {
-            it.reset()
             Log.e("lzt", "reset player!")
+            it.reset()
         }
     }
 
@@ -320,6 +361,17 @@ class NEPlayerStrategy(
         (causeCode < NEErrorType.NELP_EN_UNKNOWN_ERROR && cause != 0
                 && cause >= NEErrorType.NELP_EN_UNKNOWN_ERROR).no {
             cause = causeCode
+        }
+    }
+
+    /**
+     * 保存播放进度
+     */
+    private fun savePlayerState() {
+        mMediaPlayer?.let {
+            (it.duration <= 0).no {
+                skipToPosition = it.currentPosition
+            }
         }
     }
 
@@ -367,6 +419,7 @@ class NEPlayerStrategy(
     private val onCompletionListener = NELivePlayer.OnCompletionListener { _ ->
         Log.e("lzt", "onCompletion ——> STATE_STOP")
         resetPlayer()
+        scanForActivity(context)?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         subject.onNext(PlayerCommandFork.Completion)
         setCurrentState(PlayerState.STOPPED, CauseCode.CODE_VIDEO_STOPPED_AS_ON_COMPLETION)
     }
@@ -462,5 +515,22 @@ class NEPlayerStrategy(
             vodTimer!!.purge()
             vodTimer = null
         }
+    }
+
+    /**
+     * 恢复播放
+     */
+    private fun recoverPlayer() {
+        mMediaPlayer?.let {
+            if (getCurrentState().state != PlayerState.PAUSED) {
+                return
+            } else {
+                // 如果退入后台播放器本身就是暂停的，那么还是暂停状态
+                if (getCurrentState().causeCode != CauseCode.CODE_VIDEO_PAUSED_BY_BACKGROUND) {
+                    return
+                }
+            }
+        }
+        start()
     }
 }

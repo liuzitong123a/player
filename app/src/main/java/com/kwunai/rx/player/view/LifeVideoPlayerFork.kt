@@ -66,7 +66,6 @@ class LifeVideoPlayerFork @JvmOverloads constructor(
         container.addView(controller, params)
     }
 
-
     /**
      * 外层配置
      */
@@ -81,6 +80,7 @@ class LifeVideoPlayerFork @JvmOverloads constructor(
      * 开始播放
      */
     override fun start() {
+
         playerStrategy!!.start()
     }
 
@@ -198,14 +198,14 @@ class LifeVideoPlayerFork @JvmOverloads constructor(
      * 监听生命周期的onResume方法
      */
     override fun onResume(lifecycleOwner: LifecycleOwner) {
-
+        playerStrategy?.onActivityResume()
     }
 
     /**
      * 监听生命周期的onStop方法
      */
     override fun onStop(lifecycleOwner: LifecycleOwner) {
-
+        playerStrategy?.onActivityStop()
     }
 
     /**

@@ -62,8 +62,8 @@ class PlayerDispatcherImpl(
 
     //net
     private var connectWatcher: ConnectWatcher? = null
-    private var foreground = true // app是否在前台(默认在前台)
     private var netAvailable: Boolean = false // 网络是否连通
+    private var foreground = true // app是否在前台(默认在前台)
     private var backgroundTime: Long = 0 // 退到后台的时间点
 
     init {

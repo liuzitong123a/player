@@ -27,4 +27,9 @@ object CauseCode {
      * 视频因为播放完成而停止
      */
     const val CODE_VIDEO_STOPPED_AS_ON_COMPLETION = -10104
+
+    /**
+     * 视频因为到后台而暂停
+     */
+    const val CODE_VIDEO_PAUSED_BY_BACKGROUND = -10105
 }
