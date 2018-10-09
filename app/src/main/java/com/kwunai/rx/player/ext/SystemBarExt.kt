@@ -8,9 +8,6 @@ import android.graphics.Color
 import android.os.Build
 import android.view.WindowManager
 import android.util.DisplayMetrics
-import android.view.Display
-import android.support.annotation.RequiresApi
-
 
 /**
  * 获取statusBar的高度
@@ -157,6 +154,20 @@ fun Context.hasNotchAtXiaoMi(): Boolean {
  */
 fun Context.hasNotch(): Boolean {
     return hasNotchAtHuawei() || hasNotchAtOPPO() || hasNotchAtVivo() || hasNotchAtXiaoMi()
+}
+
+fun Context.transparentBar() {
+    val activity = scanForActivity(context = this)
+    activity?.let {
+        it.window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+        val flag = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            it.window.statusBarColor = Color.TRANSPARENT
+        }
+        it.window.decorView.systemUiVisibility = flag
+    }
+
 }
 
 fun Context.hideBar() {

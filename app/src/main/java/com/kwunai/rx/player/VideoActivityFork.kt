@@ -6,10 +6,7 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.View
-import com.kwunai.rx.player.ext.getStatusHeight
-import com.kwunai.rx.player.ext.hasNotch
-import com.kwunai.rx.player.ext.otherwise
-import com.kwunai.rx.player.ext.yes
+import com.kwunai.rx.player.ext.*
 import com.kwunai.rx.player.view.LifeVideoPlayerFork
 import com.kwunai.rx.player.view.VideoControllerFork
 
@@ -27,6 +24,7 @@ class VideoActivityFork : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        transparentBar()
         setContentView(R.layout.activity_main1)
         fitNotchScreen()
         player.createPlayerConfig(url)
