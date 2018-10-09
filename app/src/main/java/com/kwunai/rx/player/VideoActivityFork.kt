@@ -4,15 +4,11 @@ import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import android.util.Log
 import android.view.View
 import com.kwunai.rx.player.ext.*
 import com.kwunai.rx.player.view.LifeVideoPlayerFork
 import com.kwunai.rx.player.view.VideoControllerFork
-
-
 import kotlinx.android.synthetic.main.activity_main1.*
-import android.view.ViewGroup
 
 
 class VideoActivityFork : AppCompatActivity() {
@@ -25,7 +21,6 @@ class VideoActivityFork : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        transparentBar()
         setContentView(R.layout.activity_main1)
         fitNotchScreen()
         player.createPlayerConfig(url)
@@ -52,10 +47,8 @@ class VideoActivityFork : AppCompatActivity() {
         super.onConfigurationChanged(newConfig)
         hasNotch().yes {
             (newConfig.orientation == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE).yes {
-                Log.e("lzt", "onConfigurationChanged1")
                 systemView.visibility = View.GONE
             }.otherwise {
-                Log.e("lzt", "onConfigurationChanged12")
                 systemView.visibility = View.VISIBLE
             }
         }

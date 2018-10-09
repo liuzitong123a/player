@@ -15,6 +15,7 @@ import com.kwunai.rx.player.core.PlayerStrategy
 import com.kwunai.rx.player.ext.bindLifecycle
 import com.kwunai.rx.player.ext.scanForActivity
 import com.kwunai.rx.player.ext.setRequestedOrientation
+import com.kwunai.rx.player.ext.transparentBar
 import com.kwunai.rx.player.modal.PlayMode
 import com.kwunai.rx.player.modal.StateInfo
 import com.kwunai.rx.player.modal.VideoScaleMode
@@ -47,6 +48,7 @@ class LifeVideoPlayerFork @JvmOverloads constructor(
     private lateinit var controller: VideoControllerFork
 
     init {
+        context.transparentBar()
         container.setBackgroundColor(Color.BLACK)
         val params = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT)
