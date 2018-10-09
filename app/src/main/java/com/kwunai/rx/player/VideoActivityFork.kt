@@ -12,6 +12,7 @@ import com.kwunai.rx.player.view.VideoControllerFork
 
 
 import kotlinx.android.synthetic.main.activity_main1.*
+import android.view.ViewGroup
 
 
 class VideoActivityFork : AppCompatActivity() {
@@ -42,6 +43,9 @@ class VideoActivityFork : AppCompatActivity() {
         } else {
             systemView.visibility = View.GONE
         }
+        val navLayoutParams = nav.layoutParams
+        navLayoutParams.height += getNavBarHeight()
+        nav.layoutParams = navLayoutParams
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {

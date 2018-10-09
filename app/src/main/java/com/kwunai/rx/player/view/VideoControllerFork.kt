@@ -15,7 +15,6 @@ import com.kwunai.rx.player.core.PlayerCommandFork
 import com.kwunai.rx.player.ext.*
 import com.kwunai.rx.player.modal.PlayerState
 
-
 /**
  * 视频播放器控制层
  */
@@ -51,24 +50,24 @@ class VideoControllerFork @JvmOverloads constructor(
         when (command) {
             is PlayerCommandFork.Preparing -> {
                 Log.e("lzt", "Preparing")
-                mProgressBar.visibility = View.VISIBLE
+                mLoadingView.visibility = View.VISIBLE
             }
             is PlayerCommandFork.Prepared -> {
                 Log.e("lzt", "Prepared")
-                mProgressBar.visibility = View.GONE
+                mLoadingView.visibility = View.GONE
                 mLVideoBottom.visibility = View.VISIBLE
             }
             is PlayerCommandFork.BufferingStart -> {
                 Log.e("lzt", "BufferingStart")
-                mProgressBar.visibility = View.VISIBLE
+                mLoadingView.visibility = View.VISIBLE
             }
             is PlayerCommandFork.BufferingEnd -> {
                 Log.e("lzt", "BufferingEnd")
-                mProgressBar.visibility = View.GONE
+                mLoadingView.visibility = View.GONE
             }
             is PlayerCommandFork.Error -> {
                 Log.e("lzt", "Error:${command.code}${command.extra}")
-                mProgressBar.visibility = View.GONE
+                mLoadingView.visibility = View.GONE
                 mLVideoBottom.visibility = View.GONE
             }
             is PlayerCommandFork.CurrentProgress -> {
@@ -102,7 +101,7 @@ class VideoControllerFork @JvmOverloads constructor(
             context.getScreenWidth()
         } else {
             (context.hasNavBar()).yes {
-                context.getScreenWidth() - context.getNavBarHeight()
+                context.getScreenWidth() - context.getNavBarHeight() - context.getStatusHeight()
             }.otherwise {
                 context.getScreenWidth()
             }

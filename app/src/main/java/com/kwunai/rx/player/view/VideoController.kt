@@ -50,21 +50,21 @@ class VideoController @JvmOverloads constructor(
         when (command) {
             is PlayerCommand.Preparing -> {
                 Log.e("lzt", "Preparing")
-                mProgressBar.visibility = View.VISIBLE
+                mLoadingView.visibility = View.VISIBLE
             }
             is PlayerCommand.Prepared -> {
                 Log.e("lzt", "Prepared")
-                mProgressBar.visibility = View.GONE
+                mLoadingView.visibility = View.GONE
                 mLVideoBottom.visibility = View.VISIBLE
                 tvEndTime.text = stringForTime(command.mediaInfo.mDuration)
             }
             is PlayerCommand.BufferingStart -> {
                 Log.e("lzt", "BufferingStart")
-                mProgressBar.visibility = View.VISIBLE
+                mLoadingView.visibility = View.VISIBLE
             }
             is PlayerCommand.BufferingEnd -> {
                 Log.e("lzt", "BufferingEnd")
-                mProgressBar.visibility = View.GONE
+                mLoadingView.visibility = View.GONE
             }
             is PlayerCommand.Completion -> {
                 Log.e("lzt", "Completion")
@@ -72,16 +72,16 @@ class VideoController @JvmOverloads constructor(
             }
             is PlayerCommand.Error -> {
                 Log.e("lzt", "Error:${command.code}${command.extra}")
-                mProgressBar.visibility = View.GONE
+                mLoadingView.visibility = View.GONE
                 mLVideoBottom.visibility = View.GONE
             }
             is PlayerCommand.StateChanged -> {
                 if (command.stateInfo.state == PlayerState.STOPPED) {
                     Log.e("lzt", "StateChanged${command.stateInfo}")
-                    mProgressBar.visibility = View.GONE
+                    mLoadingView.visibility = View.GONE
                     mLVideoBottom.visibility = View.GONE
                 } else if (command.stateInfo.state == PlayerState.ERROR) {
-                    mProgressBar.visibility = View.GONE
+                    mLoadingView.visibility = View.GONE
                     mLVideoBottom.visibility = View.GONE
                 }
             }
