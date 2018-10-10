@@ -1,12 +1,13 @@
-package com.kwunai.rx.player.core
+package com.kwunai.rx.player.neplayer
 
 import android.content.Context
+import com.kwunai.rx.player.core.PlayerStrategy
 import com.netease.neliveplayer.sdk.NEDynamicLoadingConfig
 import com.netease.neliveplayer.sdk.NELivePlayer
 import com.netease.neliveplayer.sdk.NESDKConfig
 
 
-object PlayerManager {
+object NEPlayerManager {
 
     /**
      * 初始化SDK,使用播放器时必须先进行初始化才能进行后续操作。

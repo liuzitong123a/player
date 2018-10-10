@@ -10,7 +10,7 @@ import android.view.Gravity
 import android.view.ViewGroup
 import android.view.Window
 import android.widget.FrameLayout
-import com.kwunai.rx.player.core.PlayerManager
+import com.kwunai.rx.player.neplayer.NEPlayerManager
 import com.kwunai.rx.player.core.PlayerStrategy
 import com.kwunai.rx.player.ext.bindLifecycle
 import com.kwunai.rx.player.ext.scanForActivity
@@ -72,7 +72,7 @@ class LifeVideoPlayer @JvmOverloads constructor(
      * 外层配置
      */
     fun createPlayerConfig(path: String) {
-        playerStrategy = PlayerManager.configPlayer(context)
+        playerStrategy = NEPlayerManager.configPlayer(context)
         playerStrategy!!.setUp(path)
         playerStrategy!!.setupRenderView(surfaceView, VideoScaleMode.FIT)
         addSurfaceView()

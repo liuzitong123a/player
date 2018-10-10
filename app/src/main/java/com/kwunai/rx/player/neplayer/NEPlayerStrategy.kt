@@ -1,6 +1,6 @@
 @file:Suppress("DEPRECATION")
 
-package com.kwunai.rx.player.core
+package com.kwunai.rx.player.neplayer
 
 import android.content.Context
 import android.media.AudioAttributes
@@ -11,6 +11,9 @@ import android.support.annotation.FloatRange
 import android.util.Log
 import android.view.Surface
 import android.view.WindowManager
+import com.kwunai.rx.player.core.ConnectWatcher
+import com.kwunai.rx.player.core.PlayerCommand
+import com.kwunai.rx.player.core.PlayerStrategy
 import com.kwunai.rx.player.ext.isNetAvailable
 import com.kwunai.rx.player.ext.no
 import com.kwunai.rx.player.ext.scanForActivity
