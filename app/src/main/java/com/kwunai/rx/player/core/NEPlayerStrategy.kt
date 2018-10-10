@@ -11,11 +11,12 @@ import android.support.annotation.FloatRange
 import android.util.Log
 import android.view.Surface
 import android.view.WindowManager
+import com.kwunai.rx.player.ext.isNetAvailable
 import com.kwunai.rx.player.ext.no
 import com.kwunai.rx.player.ext.scanForActivity
 import com.kwunai.rx.player.ext.yes
 import com.kwunai.rx.player.modal.*
-import com.kwunai.rx.player.view.IRenderViewFork
+import com.kwunai.rx.player.view.IRenderView
 import com.netease.neliveplayer.sdk.NELivePlayer
 import com.netease.neliveplayer.sdk.constant.NEBufferStrategy
 import com.netease.neliveplayer.sdk.constant.NEErrorType
@@ -53,7 +54,7 @@ class NEPlayerStrategy(
     private var mAudioManager: AudioManager? = null
     private var audioFocusRequest: AudioFocusRequest? = null
     // 以下六个参数为视频视图显示大小相关
-    private var renderView: IRenderViewFork? = null
+    private var renderView: IRenderView? = null
     private var scaleMode = VideoScaleMode.NONE
     private var videoWidth: Int = 0
     private var videoHeight: Int = 0
@@ -66,6 +67,10 @@ class NEPlayerStrategy(
     private var foreground = true
     // 退到后台的时间点
     private var backgroundTime: Long = 0
+    // 网络监听器
+    private var connectWatcher: ConnectWatcher? = null
+    // 网络是否连通
+    private var netAvailable: Boolean = false
 
     init {
         setCurrentState(PlayerState.IDLE, 0)
@@ -81,7 +86,7 @@ class NEPlayerStrategy(
     /**
      * 设置播放所需的RenderView,实现IRenderView,可自定义实现
      */
-    override fun setupRenderView(renderView: IRenderViewFork?, videoScaleMode: VideoScaleMode) {
+    override fun setupRenderView(renderView: IRenderView?, videoScaleMode: VideoScaleMode) {
         renderView?.let {
             this.renderView = it
             this.scaleMode = videoScaleMode
@@ -126,7 +131,7 @@ class NEPlayerStrategy(
             it.setPlaybackTimeout(10)
             it.setLooping(0)
         }
-        renderView?.setCallback(object : IRenderViewFork.SurfaceCallback {
+        renderView?.setCallback(object : IRenderView.SurfaceCallback {
             override fun onSurfaceCreated(surface: Surface?) {
                 openPlayer(surface)
             }
@@ -156,7 +161,7 @@ class NEPlayerStrategy(
                 it.prepareAsync()
                 Log.e("lzt", "STATE_PREPARING")
                 setCurrentState(PlayerState.PREPARING, 0)
-                subject.onNext(PlayerCommandFork.Preparing)
+                subject.onNext(PlayerCommand.Preparing)
             } catch (e: IOException) {
                 e.printStackTrace()
             }
@@ -183,6 +188,16 @@ class NEPlayerStrategy(
                 resetPlayer()
             }
         }
+
+        netAvailable = context.isNetAvailable()
+
+        if (connectWatcher == null) {
+            connectWatcher = ConnectWatcher(this.context, connectCallback)
+            connectWatcher!!.startup()
+            Log.e("lzt", "connect watcher startup")
+        }
+
+
         // 设置常亮
         scanForActivity(context)?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         initAudio()
@@ -205,7 +220,7 @@ class NEPlayerStrategy(
         mMediaPlayer?.start()
         setCurrentState(PlayerState.PLAYING, 0)
         (mMediaPlayer!!.duration > 0).yes { startVodTimer() }
-        subject.onNext(PlayerCommandFork.Prepared)
+        subject.onNext(PlayerCommand.Prepared)
     }
 
     /**
@@ -243,7 +258,7 @@ class NEPlayerStrategy(
             }
         }
         // 重新恢复拉流视频
-        recoverPlayer()
+        recoverPlayer(false)
     }
 
     override fun onActivityStop() {
@@ -362,6 +377,7 @@ class NEPlayerStrategy(
                 && cause >= NEErrorType.NELP_EN_UNKNOWN_ERROR).no {
             cause = causeCode
         }
+        subject.onNext(PlayerCommand.StateChanged(StateInfo(state, cause)))
     }
 
     /**
@@ -410,7 +426,7 @@ class NEPlayerStrategy(
         (it.duration > 0).yes { startVodTimer() }
         it.start()
         setCurrentState(PlayerState.PREPARED, 0)
-        subject.onNext(PlayerCommandFork.Prepared)
+        subject.onNext(PlayerCommand.Prepared)
     }
 
     /**
@@ -420,7 +436,7 @@ class NEPlayerStrategy(
         Log.e("lzt", "onCompletion ——> STATE_STOP")
         resetPlayer()
         scanForActivity(context)?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        subject.onNext(PlayerCommandFork.Completion)
+        subject.onNext(PlayerCommand.Completion)
         setCurrentState(PlayerState.STOPPED, CauseCode.CODE_VIDEO_STOPPED_AS_ON_COMPLETION)
     }
 
@@ -430,7 +446,7 @@ class NEPlayerStrategy(
     private val onErrorListener = NELivePlayer.OnErrorListener { _, what, extra ->
         Log.e("lzt", "on player error, what=$what, extra=$extra")
         resetPlayer()
-        subject.onNext(PlayerCommandFork.Error(code = what, extra = extra))
+        subject.onNext(PlayerCommand.Error(code = what, extra = extra))
         setCurrentState(PlayerState.ERROR, what)
         true
     }
@@ -441,7 +457,7 @@ class NEPlayerStrategy(
     private val onVideoParseErrorListener = NELivePlayer.OnVideoParseErrorListener { _ ->
         Log.e("lzt", "on player parse video error")
         setCurrentState(PlayerState.ERROR, CauseCode.CODE_VIDEO_PARSER_ERROR)
-        subject.onNext(PlayerCommandFork.Error(CauseCode.CODE_VIDEO_PARSER_ERROR, 0))
+        subject.onNext(PlayerCommand.Error(CauseCode.CODE_VIDEO_PARSER_ERROR, 0))
     }
 
     /**
@@ -452,16 +468,16 @@ class NEPlayerStrategy(
             NEPlayStatusType.NELP_BUFFERING_START -> {
                 Logger.e("on player info: buffering start")
                 stopVodTimer()
-                subject.onNext(PlayerCommandFork.BufferingStart)
+                subject.onNext(PlayerCommand.BufferingStart)
             }
             NEPlayStatusType.NELP_BUFFERING_END -> {
                 Logger.e("on player info: buffering end")
                 startVodTimer()
-                subject.onNext(PlayerCommandFork.BufferingEnd)
+                subject.onNext(PlayerCommand.BufferingEnd)
             }
             NEPlayStatusType.NELP_NET_STATE_BAD -> {
                 Logger.e("on player info: network state bad tip")
-                subject.onNext(PlayerCommandFork.NetStateBad)
+                subject.onNext(PlayerCommand.NetStateBad)
             }
         }
         false
@@ -483,7 +499,7 @@ class NEPlayerStrategy(
         val d = duration
         val cc = cached
         if (c >= 0 && d > 0) {
-            subject.onNext(PlayerCommandFork.CurrentProgress(c, d, 100.0f * c / d, cc))
+            subject.onNext(PlayerCommand.CurrentProgress(c, d, 100.0f * c / d, cc))
         }
     }
 
@@ -518,19 +534,78 @@ class NEPlayerStrategy(
     }
 
     /**
-     * 恢复播放
+     * 网络监听回调
      */
-    private fun recoverPlayer() {
-        mMediaPlayer?.let {
-            if (getCurrentState().state != PlayerState.PAUSED) {
-                return
-            } else {
-                // 如果退入后台播放器本身就是暂停的，那么还是暂停状态
-                if (getCurrentState().causeCode != CauseCode.CODE_VIDEO_PAUSED_BY_BACKGROUND) {
-                    return
-                }
+    private val connectCallback = object : ConnectWatcher.Callback {
+        override fun onNetworkEvent(event: NetworkState) {
+            when (event) {
+                NetworkState.NETWORK_AVAILABLE -> onNetworkAvailable()
+                NetworkState.NETWORK_UNAVAILABLE -> onNetworkUnavailable()
+                NetworkState.NETWORK_CHANGE -> onNetworkChange()
             }
         }
-        start()
+    }
+
+    /**
+     * 网络可用
+     */
+    private fun onNetworkAvailable() {
+        Log.e("lzt", "network available")
+        netAvailable = true
+        recoverPlayer(true) // 可能需要重启播放器
+    }
+
+    /**
+     * 网络不可用
+     * 这里网络断开了，保存一下播放进度，同时停止播放
+     */
+    private fun onNetworkUnavailable() {
+        Log.e("lzt", "network unavailable")
+        netAvailable = false
+        savePlayerState()
+        resetPlayer()
+        setCurrentState(PlayerState.STOPPED, CauseCode.CODE_VIDEO_STOPPED_AS_NET_UNAVAILABLE)
+    }
+
+    /**
+     * 网络变化（可以处理UI变化）
+     * wife-4g 中间会有断网通知 network unavailable -> network changed to MOBILE -> network available，这里会return掉
+     * 4G -> wifi: 中间不会收到断网通知，这里必须要reset再重连，否则会出现缓冲错误
+     */
+    private fun onNetworkChange() {
+        connectWatcher?.let {
+            if (netAvailable == it.isAvailable()) {
+                Logger.v("network type changed to " + it.getNetworkType() + ", recover video...")
+                savePlayerState()
+                resetPlayer()
+                recoverPlayer(true)
+            }
+        }
+    }
+
+
+    /**
+     * 恢复播放
+     */
+    private fun recoverPlayer(netRecovery: Boolean) {
+        mMediaPlayer?.let {
+            // 回到前台不是暂停状态
+            if (getCurrentState().state != PlayerState.PAUSED) {
+                return
+            }
+            // 如果退入后台播放器本身就是暂停的，那么还是暂停状态
+            if (getCurrentState().state == PlayerState.PAUSED && getCurrentState().causeCode != CauseCode.CODE_VIDEO_PAUSED_BY_BACKGROUND) {
+                return
+            }
+            // 没有网络或者没有在前台就不需要重新初始化视频了
+            if (netRecovery && !foreground) {
+                return
+            }
+            // APP回到前台，发现没有网络，那么不立即初始化，等待网络连通了再初始化
+            if (!netRecovery && !netAvailable) {
+                return
+            }
+            start()
+        }
     }
 }

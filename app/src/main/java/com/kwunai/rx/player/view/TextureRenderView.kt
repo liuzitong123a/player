@@ -11,10 +11,10 @@ import com.kwunai.rx.player.modal.VideoScaleMode
 
 class TextureRenderView @JvmOverloads constructor(
         context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
-) : TextureView(context, attrs, defStyleAttr), IRenderViewFork, TextureView.SurfaceTextureListener {
+) : TextureView(context, attrs, defStyleAttr), IRenderView, TextureView.SurfaceTextureListener {
 
 
-    private var mCallback: IRenderViewFork.SurfaceCallback? = null
+    private var mCallback: IRenderView.SurfaceCallback? = null
 
     private var mSurfaceTexture: SurfaceTexture? = null
 
@@ -46,7 +46,7 @@ class TextureRenderView @JvmOverloads constructor(
         }
     }
 
-    override fun setCallback(callback: IRenderViewFork.SurfaceCallback?) {
+    override fun setCallback(callback: IRenderView.SurfaceCallback?) {
         if (mCallback != null || callback == null) {
             return
         }

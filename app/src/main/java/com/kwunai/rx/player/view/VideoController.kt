@@ -2,6 +2,7 @@ package com.kwunai.rx.player.view
 
 import android.content.Context
 import android.os.Build
+
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
@@ -9,7 +10,6 @@ import android.widget.FrameLayout
 import com.kwunai.rx.player.R
 import com.kwunai.rx.player.modal.PlayMode
 import kotlinx.android.synthetic.main.widgets_video_controller.view.*
-import android.view.ViewGroup
 import android.widget.SeekBar
 import com.kwunai.rx.player.core.PlayerCommand
 import com.kwunai.rx.player.ext.*
@@ -20,7 +20,7 @@ import com.kwunai.rx.player.modal.PlayerState
  */
 class VideoController @JvmOverloads constructor(
         context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
-) : FrameLayout(context, attrs, defStyleAttr), SeekBar.OnSeekBarChangeListener, View.OnClickListener {
+) : FrameLayout(context, attrs, defStyleAttr), View.OnClickListener, SeekBar.OnSeekBarChangeListener {
 
     private lateinit var player: ILifecyclePlayer
 
@@ -32,8 +32,8 @@ class VideoController @JvmOverloads constructor(
         View.inflate(context, R.layout.widgets_video_controller, this)
         ibFullScreen.setOnClickListener(this)
         ivPause.setOnClickListener(this)
-        setOnClickListener(this)
         seekBar.setOnSeekBarChangeListener(this)
+        setOnClickListener(this)
     }
 
     /**
@@ -56,7 +56,6 @@ class VideoController @JvmOverloads constructor(
                 Log.e("lzt", "Prepared")
                 mLoadingView.visibility = View.GONE
                 mLVideoBottom.visibility = View.VISIBLE
-                tvEndTime.text = stringForTime(command.mediaInfo.mDuration)
             }
             is PlayerCommand.BufferingStart -> {
                 Log.e("lzt", "BufferingStart")
@@ -66,30 +65,14 @@ class VideoController @JvmOverloads constructor(
                 Log.e("lzt", "BufferingEnd")
                 mLoadingView.visibility = View.GONE
             }
-            is PlayerCommand.Completion -> {
-                Log.e("lzt", "Completion")
-                // listener.onCompletion()
-            }
             is PlayerCommand.Error -> {
                 Log.e("lzt", "Error:${command.code}${command.extra}")
                 mLoadingView.visibility = View.GONE
                 mLVideoBottom.visibility = View.GONE
             }
-            is PlayerCommand.StateChanged -> {
-                if (command.stateInfo.state == PlayerState.STOPPED) {
-                    Log.e("lzt", "StateChanged${command.stateInfo}")
-                    mLoadingView.visibility = View.GONE
-                    mLVideoBottom.visibility = View.GONE
-                } else if (command.stateInfo.state == PlayerState.ERROR) {
-                    mLoadingView.visibility = View.GONE
-                    mLVideoBottom.visibility = View.GONE
-                }
-            }
-            is PlayerCommand.NetStateBad -> {
-                Log.e("lzt", "NetStateBad")
-            }
             is PlayerCommand.CurrentProgress -> {
                 tvStartTime.text = stringForTime(command.currentPosition)
+                tvEndTime.text = stringForTime(command.duration)
                 seekBar.secondaryProgress = command.cachedPosition.toInt()
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                     seekBar.setProgress(command.percent.toInt(), true)
@@ -105,7 +88,6 @@ class VideoController @JvmOverloads constructor(
      */
     fun onPlayModeChanged(playerMode: PlayMode) {
         changeBottomSize(playerMode)
-
     }
 
     /**
@@ -115,16 +97,21 @@ class VideoController @JvmOverloads constructor(
      */
     private fun changeBottomSize(playerMode: PlayMode) {
         val layoutParams = mLVideoBottom.layoutParams
-        layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT
-        val height = if (playerMode == PlayMode.MODE_NORMAL) {
-            mLVideoBottom.setPadding(0, 0, 0, 0)
-            context.dp2px(40f)
+        val width = if (playerMode == PlayMode.MODE_NORMAL) {
+            context.getScreenWidth()
         } else {
             (context.hasNavBar()).yes {
-                mLVideoBottom.setPadding(0, 0, context.getNavBarHeight(), 0)
+                context.getScreenWidth() - context.getNavBarHeight() - context.getStatusHeight()
+            }.otherwise {
+                context.getScreenWidth()
             }
+        }
+        val height = if (playerMode == PlayMode.MODE_NORMAL) {
+            context.dp2px(40f)
+        } else {
             context.dp2px(50f)
         }
+        layoutParams.width = width
         layoutParams.height = height
         mLVideoBottom.layoutParams = layoutParams
         requestLayout()
@@ -171,7 +158,11 @@ class VideoController @JvmOverloads constructor(
     }
 
     override fun onStopTrackingTouch(seekBar: SeekBar) {
-        player.seekTo(seekBar)
+        (player.getCurrentState().state == PlayerState.PAUSED).yes {
+            player.start()
+        }
+        val position = (player.getDuration() * seekBar.progress / 100f).toLong()
+        player.seekTo(position)
         player.startTimer()
     }
 }

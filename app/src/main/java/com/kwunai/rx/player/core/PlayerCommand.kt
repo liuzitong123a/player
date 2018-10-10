@@ -1,6 +1,5 @@
 package com.kwunai.rx.player.core
 
-import com.kwunai.rx.player.modal.MediaInfo
 import com.kwunai.rx.player.modal.StateInfo
 
 /**
@@ -10,7 +9,7 @@ sealed class PlayerCommand {
 
     object Preparing : PlayerCommand()
 
-    class Prepared(val mediaInfo: MediaInfo) : PlayerCommand()
+    object Prepared : PlayerCommand()
 
     object BufferingStart : PlayerCommand()
 
