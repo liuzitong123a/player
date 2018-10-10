@@ -12,10 +12,7 @@ import android.view.Window
 import android.widget.FrameLayout
 import com.kwunai.rx.player.neplayer.NEPlayerManager
 import com.kwunai.rx.player.core.PlayerStrategy
-import com.kwunai.rx.player.ext.bindLifecycle
-import com.kwunai.rx.player.ext.scanForActivity
-import com.kwunai.rx.player.ext.setRequestedOrientation
-import com.kwunai.rx.player.ext.transparentBar
+import com.kwunai.rx.player.ext.*
 import com.kwunai.rx.player.modal.PlayMode
 import com.kwunai.rx.player.modal.StateInfo
 import com.kwunai.rx.player.modal.VideoScaleMode
@@ -163,17 +160,21 @@ class LifeVideoPlayer @JvmOverloads constructor(
     /**
      * 退出模式
      */
-    override fun exitFullscreenWindow() {
-        context.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
-        val contentView = scanForActivity(context)?.findViewById<ViewGroup>(Window.ID_ANDROID_CONTENT)
-        contentView?.removeView(container)
-        val params = FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-        )
-        this.addView(container, params)
-        currentPlayMode = PlayMode.MODE_NORMAL
-        controller.onPlayModeChanged(PlayMode.MODE_NORMAL)
+    override fun exitFullscreenWindow(): Boolean {
+        (currentPlayMode == PlayMode.MODE_FULL_SCREEN).yes {
+            context.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
+            val contentView = scanForActivity(context)?.findViewById<ViewGroup>(Window.ID_ANDROID_CONTENT)
+            contentView?.removeView(container)
+            val params = FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+            )
+            this.addView(container, params)
+            currentPlayMode = PlayMode.MODE_NORMAL
+            controller.onPlayModeChanged(PlayMode.MODE_NORMAL)
+            return true
+        }
+        return false
     }
 
     /**
@@ -210,6 +211,14 @@ class LifeVideoPlayer @JvmOverloads constructor(
         playerStrategy?.onActivityStop()
     }
 
+
+    fun onBackPressed(): Boolean {
+        if (getPlayMode() == PlayMode.MODE_FULL_SCREEN) {
+            return exitFullscreenWindow()
+        }
+        return false
+    }
+
     /**
      * 监听生命周期的onDestroy方法
      */
@@ -217,4 +226,6 @@ class LifeVideoPlayer @JvmOverloads constructor(
         Log.e("lzt", "player onDestroy")
         releasePlayer()
     }
+
+
 }

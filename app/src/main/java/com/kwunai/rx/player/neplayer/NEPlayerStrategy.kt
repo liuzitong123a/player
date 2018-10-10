@@ -482,6 +482,9 @@ class NEPlayerStrategy(
                 Logger.e("on player info: network state bad tip")
                 subject.onNext(PlayerCommand.NetStateBad)
             }
+            NEPlayStatusType.NELP_FIRST_VIDEO_RENDERED -> {
+                setCurrentState(PlayerState.PLAYING, 0)
+            }
         }
         false
     }

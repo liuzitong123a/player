@@ -36,7 +36,7 @@ interface ILifecyclePlayer : LifecycleObserver {
 
     fun startFullscreenWindow()
 
-    fun exitFullscreenWindow()
+    fun exitFullscreenWindow(): Boolean
 
     fun getPlayMode(): PlayMode
 
