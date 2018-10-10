@@ -4,43 +4,51 @@ import android.arch.lifecycle.LifecycleOwner
 import android.content.Context
 import android.content.pm.ActivityInfo
 import android.graphics.Color
-import android.support.annotation.CallSuper
 import android.util.AttributeSet
 import android.util.Log
 import android.view.Gravity
 import android.view.ViewGroup
 import android.view.Window
 import android.widget.FrameLayout
-import android.widget.SeekBar
-import com.kwunai.rx.player.core.PlayerDispatcherImpl
 import com.kwunai.rx.player.core.PlayerManager
+import com.kwunai.rx.player.core.PlayerStrategy
 import com.kwunai.rx.player.ext.bindLifecycle
 import com.kwunai.rx.player.ext.scanForActivity
 import com.kwunai.rx.player.ext.setRequestedOrientation
+import com.kwunai.rx.player.ext.transparentBar
 import com.kwunai.rx.player.modal.PlayMode
+import com.kwunai.rx.player.modal.StateInfo
 import com.kwunai.rx.player.modal.VideoScaleMode
 import io.reactivex.android.schedulers.AndroidSchedulers
 
-
+/**
+ * 视频播放器的容器类，用于绑定生命周期，监听状态变化
+ */
 class LifeVideoPlayer @JvmOverloads constructor(
         context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : FrameLayout(context, attrs, defStyleAttr), ILifecyclePlayer {
 
+
+    // 当前播放器屏幕的状态
     private var currentPlayMode = PlayMode.MODE_NORMAL
 
-    private var playerDispatcher: PlayerDispatcherImpl? = null
+    private var playerStrategy: PlayerStrategy? = null
 
+    // 视频所需要的播放组件
     private val surfaceView by lazy {
-        SurfaceRenderView(context)
+        TextureRenderView(context)
     }
 
+    // 视频播放器容器
     private val container: FrameLayout by lazy {
         FrameLayout(context)
     }
 
+    // 视频播放器控制器，处理UI
     private lateinit var controller: VideoController
 
     init {
+        context.transparentBar()
         container.setBackgroundColor(Color.BLACK)
         val params = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT)
@@ -51,11 +59,9 @@ class LifeVideoPlayer @JvmOverloads constructor(
      * 设置视频的控制器
      */
     fun setController(controller: VideoController) {
-        //这里必须先移除
         container.removeView(controller)
         this.controller = controller
         controller.setVideoPlayer(this)
-
         val params = FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT)
@@ -66,37 +72,41 @@ class LifeVideoPlayer @JvmOverloads constructor(
      * 外层配置
      */
     fun createPlayerConfig(path: String) {
-        playerDispatcher = PlayerManager.configPlayer(context)
-        playerDispatcher!!.setUp(path)
+        playerStrategy = PlayerManager.configPlayer(context)
+        playerStrategy!!.setUp(path)
+        playerStrategy!!.setupRenderView(surfaceView, VideoScaleMode.FIT)
         addSurfaceView()
-        playerDispatcher!!.setupRenderView(surfaceView, VideoScaleMode.FULL)
     }
 
     /**
      * 开始播放
      */
     override fun start() {
-        playerDispatcher!!.start()
-    }
 
-    override fun isPlaying(): Boolean {
-        return playerDispatcher!!.isPlaying()
+        playerStrategy!!.start()
     }
 
     override fun pause() {
-        playerDispatcher!!.pause()
+        playerStrategy!!.pause()
     }
+
+    override fun isPlaying(): Boolean {
+        return playerStrategy!!.isPlaying()
+    }
+
 
     /**
      * 释放VideoPlayer
      */
     private fun releasePlayer() {
-        playerDispatcher?.let {
+        container.removeView(surfaceView)
+        playerStrategy?.let {
             it.setupRenderView(null, VideoScaleMode.NONE)
             it.stop()
         }
-        playerDispatcher = null
+        playerStrategy = null
     }
+
 
     /**
      * 添加SurfaceView到视图中
@@ -111,20 +121,28 @@ class LifeVideoPlayer @JvmOverloads constructor(
     /**
      * 拖动进度
      */
-    override fun seekTo(seekBar: SeekBar) {
-        playerDispatcher?.let {
-            it.seekTo(it.getDuration() * seekBar.progress / 100)
-        }
+    override fun seekTo(position: Long) {
+        playerStrategy?.seekTo(position)
     }
 
+    /**
+     * 开始进度回调
+     */
     override fun startTimer() {
-        playerDispatcher?.startVodTimer()
+        playerStrategy?.startVodTimer()
     }
 
+    /**
+     * 结束进度回调
+     */
     override fun stopTimer() {
-        playerDispatcher?.stopVodTimer(false)
+        playerStrategy?.stopVodTimer()
     }
 
+    /**
+     * 获取当前视频总长度
+     */
+    override fun getDuration(): Long = playerStrategy?.getDuration() ?: 0
 
     /**
      * 全屏模式
@@ -158,31 +176,43 @@ class LifeVideoPlayer @JvmOverloads constructor(
         controller.onPlayModeChanged(PlayMode.MODE_NORMAL)
     }
 
+    /**
+     * 获取当前屏幕状态
+     */
     override fun getPlayMode(): PlayMode = currentPlayMode
 
-    @CallSuper
+    /**
+     * 获取当前播放器状态
+     */
+    override fun getCurrentState(): StateInfo = playerStrategy!!.getCurrentState()
+
+    /**
+     * 监听生命周期的onCreate方法
+     */
     override fun onCreate(lifecycleOwner: LifecycleOwner) {
-        Log.e("lzt", "player onCreate register receiver")
-        playerDispatcher!!.subject
+        playerStrategy!!.subject
                 .observeOn(AndroidSchedulers.mainThread())
                 .bindLifecycle(lifecycleOwner)
                 .subscribe { controller.onPlayCommandChanged(it) }
     }
 
-
-    @CallSuper
+    /**
+     * 监听生命周期的onResume方法
+     */
     override fun onResume(lifecycleOwner: LifecycleOwner) {
-        Log.e("lzt", "player onResume")
-        playerDispatcher?.onActivityResume()
+        playerStrategy?.onActivityResume()
     }
 
-    @CallSuper
+    /**
+     * 监听生命周期的onStop方法
+     */
     override fun onStop(lifecycleOwner: LifecycleOwner) {
-        Log.e("lzt", "player onStop")
-        playerDispatcher?.onActivityStop()
+        playerStrategy?.onActivityStop()
     }
 
-    @CallSuper
+    /**
+     * 监听生命周期的onDestroy方法
+     */
     override fun onDestroy(lifecycleOwner: LifecycleOwner) {
         Log.e("lzt", "player onDestroy")
         releasePlayer()

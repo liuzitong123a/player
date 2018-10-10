@@ -2,17 +2,17 @@ package com.kwunai.rx.player.core
 
 import com.kwunai.rx.player.modal.StateInfo
 import com.kwunai.rx.player.modal.VideoScaleMode
-import com.kwunai.rx.player.view.IRenderViewFork
+import com.kwunai.rx.player.view.IRenderView
 import io.reactivex.subjects.PublishSubject
 import io.reactivex.subjects.Subject
 
 abstract class PlayerStrategy {
 
-    val subject: Subject<PlayerCommandFork> = PublishSubject.create()
+    val subject: Subject<PlayerCommand> = PublishSubject.create()
 
     abstract fun setUp(url: String)
 
-    abstract fun setupRenderView(renderView: IRenderViewFork?, videoScaleMode: VideoScaleMode)
+    abstract fun setupRenderView(renderView: IRenderView?, videoScaleMode: VideoScaleMode)
 
     abstract fun onActivityStop()
 

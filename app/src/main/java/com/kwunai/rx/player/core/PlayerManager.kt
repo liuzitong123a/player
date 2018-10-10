@@ -29,11 +29,7 @@ object PlayerManager {
      * @param context   上下文
      * @return 播放器实例对象
      */
-    fun configPlayer(context: Context): PlayerDispatcherImpl {
-        return PlayerDispatcherImpl(context)
-    }
-
-    fun configPlayerTest(context: Context): PlayerStrategy {
+    fun configPlayer(context: Context): PlayerStrategy {
         return NEPlayerStrategy(context)
     }
 }

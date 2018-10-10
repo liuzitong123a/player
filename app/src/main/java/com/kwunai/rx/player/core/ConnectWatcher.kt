@@ -13,7 +13,6 @@ import com.kwunai.rx.player.modal.NetworkState
 
 /**
  * 监听网络变化
- * fixme
  */
 class ConnectWatcher(context: Context, callback: Callback?) {
 

@@ -4,10 +4,9 @@ import android.arch.lifecycle.Lifecycle
 import android.arch.lifecycle.LifecycleObserver
 import android.arch.lifecycle.LifecycleOwner
 import android.arch.lifecycle.OnLifecycleEvent
-import android.widget.SeekBar
 import com.kwunai.rx.player.modal.PlayMode
+import com.kwunai.rx.player.modal.StateInfo
 import org.jetbrains.annotations.NotNull
-
 
 interface ILifecyclePlayer : LifecycleObserver {
 
@@ -29,7 +28,7 @@ interface ILifecyclePlayer : LifecycleObserver {
 
     fun isPlaying(): Boolean
 
-    fun seekTo(seekBar: SeekBar)
+    fun seekTo(position: Long)
 
     fun stopTimer()
 
@@ -40,4 +39,8 @@ interface ILifecyclePlayer : LifecycleObserver {
     fun exitFullscreenWindow()
 
     fun getPlayMode(): PlayMode
+
+    fun getCurrentState(): StateInfo
+
+    fun getDuration(): Long
 }
