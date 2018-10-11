@@ -85,6 +85,18 @@ class NEPlayerStrategy(
         this.mCurrentPath = url
     }
 
+
+    /**
+     * player reset后、切后台切回前台，原来绑定的surfaceView的被置null了，重新初始化时，要重新绑上去
+     */
+    private fun reSetupRenderView() {
+        //
+        if (renderView != null && renderView?.getSurface() != null) {
+            setupRenderView(renderView, scaleMode)
+        }
+    }
+
+
     /**
      * 设置播放所需的RenderView,实现IRenderView,可自定义实现
      */
@@ -92,6 +104,9 @@ class NEPlayerStrategy(
         renderView?.let {
             this.renderView = it
             this.scaleMode = videoScaleMode
+            this.renderView!!.setCallback(surfaceCallback)
+            setVideoSizeToRenderView()
+            setDisplaySurface(it.getSurface())
         }
     }
 
@@ -133,17 +148,14 @@ class NEPlayerStrategy(
             it.setPlaybackTimeout(10)
             it.setLooping(0)
         }
-        renderView?.setCallback(object : IRenderView.SurfaceCallback {
-            override fun onSurfaceCreated(surface: Surface?) {
-                openPlayer(surface)
-            }
-        })
+        openPlayer()
+        reSetupRenderView()
     }
 
     /**
      * 打开NELivePlayer播放器
      */
-    private fun openPlayer(surface: Surface?) {
+    private fun openPlayer() {
         mMediaPlayer?.let {
             // 设置准备视频播放监听事件
             it.setOnPreparedListener(onPreparedListener)
@@ -159,7 +171,6 @@ class NEPlayerStrategy(
             it.setOnVideoParseErrorListener(onVideoParseErrorListener)
             try {
                 it.dataSource = mCurrentPath
-                it.setSurface(surface)
                 it.prepareAsync()
                 Log.e("lzt", "STATE_PREPARING")
                 setCurrentState(PlayerState.PREPARING, 0)
@@ -219,6 +230,7 @@ class NEPlayerStrategy(
      */
     override fun restart() {
         Log.e("lzt", "STATE_PLAYING")
+        reSetupRenderView()
         mMediaPlayer?.start()
         setCurrentState(PlayerState.PLAYING, 0)
         (mMediaPlayer!!.duration > 0).yes { startVodTimer() }
@@ -240,7 +252,7 @@ class NEPlayerStrategy(
     }
 
     override fun onActivityResume() {
-
+        reSetupRenderView()
         Log.e("lzt", "activity on resume")
 
         // 回到前台
@@ -392,6 +404,47 @@ class NEPlayerStrategy(
             }
         }
     }
+
+    /**
+     * surface callback
+     */
+    private val surfaceCallback: IRenderView.SurfaceCallback = object : IRenderView.SurfaceCallback {
+        override fun onSurfaceCreated(surface: Surface?) {
+            Log.e("lzt", "on surface created")
+            setDisplaySurface(surface)
+        }
+    }
+
+    /**
+     * 向render view设置视频帧大小
+     * 前置条件：
+     * 1) Player#onVideoSizeChanged必须回调了，存储了视频帧大小
+     * 2) 已经安装了render view
+     * <p>
+     * 调用时机：
+     * 1) onVideoSizeChanged回调中
+     * 2) setupRenderView时
+     */
+    private fun setVideoSizeToRenderView() {
+        if (videoWidth != 0 && videoHeight != 0 && renderView != null) {
+            renderView!!.setVideoSize(videoWidth, videoHeight, videoSarNum, videoSarDen, scaleMode)
+        }
+    }
+
+
+    /**
+     * 播放器和显示surface的绑定
+     * case 1: surfaceCreated时绑定到播放器
+     * case 2: surfaceDestroyed时解除绑定
+     * case 3: 播放器被reset后重新初始化时，如果surface没有被销毁，那么重新绑定到播放器
+     */
+    private fun setDisplaySurface(surface: Surface?) {
+        if (mMediaPlayer != null) {
+            mMediaPlayer!!.setSurface(surface)
+            Log.e("lzt", "set player display surface=$surface")
+        }
+    }
+
 
     /**
      * 获取到视频尺寸or视频尺寸发生变化
@@ -594,10 +647,6 @@ class NEPlayerStrategy(
      */
     private fun recoverPlayer(netRecovery: Boolean) {
         mMediaPlayer?.let {
-            // 回到前台不是暂停状态
-            if (getCurrentState().state != PlayerState.PAUSED) {
-                return
-            }
             // 如果退入后台播放器本身就是暂停的，那么还是暂停状态
             if (getCurrentState().state == PlayerState.PAUSED && getCurrentState().causeCode != CauseCode.CODE_VIDEO_PAUSED_BY_BACKGROUND) {
                 return

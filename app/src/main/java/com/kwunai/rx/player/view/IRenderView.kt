@@ -12,6 +12,8 @@ interface IRenderView {
 
     fun setVideoSize(videoWidth: Int, videoHeight: Int, videoSarNum: Int, videoSarDen: Int, scaleMode: VideoScaleMode?)
 
+    fun getSurface(): Surface?
+
     fun setCallback(callback: SurfaceCallback?)
 
     fun releaseRender()
