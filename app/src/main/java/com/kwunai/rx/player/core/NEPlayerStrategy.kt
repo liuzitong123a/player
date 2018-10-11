@@ -25,7 +25,6 @@ import com.orhanobut.logger.Logger
 import java.io.IOException
 import java.util.*
 
-
 /**
  * 网易播放器，基于2.0.0版本的实现
  * 可以自定义实现PlayerStrategy
