@@ -1,6 +1,6 @@
 @file:Suppress("DEPRECATION")
 
-package com.kwunai.rx.player.core
+package com.kwunai.rx.player.neplayer
 
 import android.content.Context
 import android.media.AudioAttributes
@@ -11,6 +11,9 @@ import android.support.annotation.FloatRange
 import android.util.Log
 import android.view.Surface
 import android.view.WindowManager
+import com.kwunai.rx.player.core.ConnectWatcher
+import com.kwunai.rx.player.core.PlayerCommand
+import com.kwunai.rx.player.core.PlayerStrategy
 import com.kwunai.rx.player.ext.isNetAvailable
 import com.kwunai.rx.player.ext.no
 import com.kwunai.rx.player.ext.scanForActivity
@@ -477,6 +480,9 @@ class NEPlayerStrategy(
             NEPlayStatusType.NELP_NET_STATE_BAD -> {
                 Logger.e("on player info: network state bad tip")
                 subject.onNext(PlayerCommand.NetStateBad)
+            }
+            NEPlayStatusType.NELP_FIRST_VIDEO_RENDERED -> {
+                setCurrentState(PlayerState.PLAYING, 0)
             }
         }
         false

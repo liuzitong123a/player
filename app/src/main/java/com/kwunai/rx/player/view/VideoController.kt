@@ -13,7 +13,7 @@ import kotlinx.android.synthetic.main.widgets_video_controller.view.*
 import android.widget.SeekBar
 import com.kwunai.rx.player.core.PlayerCommand
 import com.kwunai.rx.player.ext.*
-import com.kwunai.rx.player.modal.PlayerState
+import com.kwunai.rx.player.modal.PlayerState.*
 
 /**
  * 视频播放器控制层
@@ -69,6 +69,15 @@ class VideoController @JvmOverloads constructor(
                 Log.e("lzt", "Error:${command.code}${command.extra}")
                 mLoadingView.visibility = View.GONE
                 mLVideoBottom.visibility = View.GONE
+            }
+            is PlayerCommand.StateChanged -> {
+                when {
+                    command.stateInfo.state == PLAYING -> ivPause.isSelected = false
+                    command.stateInfo.state == PAUSED -> ivPause.isSelected = true
+                    command.stateInfo.state == STOPPED -> {
+
+                    }
+                }
             }
             is PlayerCommand.CurrentProgress -> {
                 tvStartTime.text = stringForTime(command.currentPosition)
@@ -129,10 +138,8 @@ class VideoController @JvmOverloads constructor(
             ivPause -> {
                 (player.isPlaying()).yes {
                     player.pause()
-                    ivPause.isSelected = true
                 }.otherwise {
                     player.start()
-                    ivPause.isSelected = false
                 }
             }
             this -> {
@@ -142,11 +149,14 @@ class VideoController @JvmOverloads constructor(
     }
 
     private fun showController(visible: Boolean) {
-        mLVideoBottom.visible(visible)
-        (player.getPlayMode() == PlayMode.MODE_FULL_SCREEN).yes {
-            visible.no { context.hideBar() }.otherwise { context.showBar(systemFlag) }
+        (player.getCurrentState().state == PLAYING ||
+                player.getCurrentState().state == PAUSED).yes {
+            mLVideoBottom.visible(visible)
+            (player.getPlayMode() == PlayMode.MODE_FULL_SCREEN).yes {
+                visible.no { context.hideBar() }.otherwise { context.showBar(systemFlag) }
+            }
+            controllerVisible = !visible
         }
-        controllerVisible = !visible
     }
 
     override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
@@ -158,7 +168,7 @@ class VideoController @JvmOverloads constructor(
     }
 
     override fun onStopTrackingTouch(seekBar: SeekBar) {
-        (player.getCurrentState().state == PlayerState.PAUSED).yes {
+        (player.getCurrentState().state == PAUSED).yes {
             player.start()
         }
         val position = (player.getDuration() * seekBar.progress / 100f).toLong()
