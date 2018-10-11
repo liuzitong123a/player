@@ -110,6 +110,18 @@ class NEPlayerStrategy(
         }
     }
 
+    override fun getMaxVolume(): Int {
+        return mAudioManager?.getStreamMaxVolume(AudioManager.STREAM_MUSIC) ?: 0
+    }
+
+    override fun getVolume(): Int {
+        return mAudioManager?.getStreamVolume(AudioManager.STREAM_MUSIC) ?: 0
+    }
+
+    override fun setVolume(volume: Int) {
+        mAudioManager?.setStreamVolume(AudioManager.STREAM_MUSIC, volume, 0)
+    }
+
     /**
      * 初始化音频管理器
      */
@@ -646,6 +658,7 @@ class NEPlayerStrategy(
      * 恢复播放
      */
     private fun recoverPlayer(netRecovery: Boolean) {
+
         mMediaPlayer?.let {
             // 如果退入后台播放器本身就是暂停的，那么还是暂停状态
             if (getCurrentState().state == PlayerState.PAUSED && getCurrentState().causeCode != CauseCode.CODE_VIDEO_PAUSED_BY_BACKGROUND) {

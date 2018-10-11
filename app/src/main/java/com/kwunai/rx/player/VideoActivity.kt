@@ -7,7 +7,7 @@ import android.support.v7.app.AppCompatActivity
 import android.view.View
 import com.kwunai.rx.player.ext.*
 import com.kwunai.rx.player.view.LifeVideoPlayer
-import com.kwunai.rx.player.view.VideoController
+import com.kwunai.rx.player.view.VodPlayerController
 import kotlinx.android.synthetic.main.activity_main1.*
 
 
@@ -24,7 +24,7 @@ class VideoActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main1)
         fitNotchScreen()
         player.createPlayerConfig(url)
-        val controller = VideoController(this)
+        val controller = VodPlayerController(this)
         player.setController(controller)
         player.start()
     }

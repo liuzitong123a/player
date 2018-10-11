@@ -45,4 +45,10 @@ abstract class PlayerStrategy {
     abstract fun startVodTimer()
 
     abstract fun stopVodTimer()
+
+    abstract fun getMaxVolume(): Int
+
+    abstract fun getVolume(): Int
+
+    abstract fun setVolume(volume: Int)
 }
