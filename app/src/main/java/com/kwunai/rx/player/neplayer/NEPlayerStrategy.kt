@@ -533,17 +533,17 @@ class NEPlayerStrategy(
     private val onInfoListener = NELivePlayer.OnInfoListener { _, what, _ ->
         when (what) {
             NEPlayStatusType.NELP_BUFFERING_START -> {
-                Logger.e("on player info: buffering start")
+                Log.e("lzt", "on player info: buffering start")
                 stopVodTimer()
                 subject.onNext(PlayerCommand.BufferingStart)
             }
             NEPlayStatusType.NELP_BUFFERING_END -> {
-                Logger.e("on player info: buffering end")
+                Log.e("lzt", "on player info: buffering end")
                 startVodTimer()
                 subject.onNext(PlayerCommand.BufferingEnd)
             }
             NEPlayStatusType.NELP_NET_STATE_BAD -> {
-                Logger.e("on player info: network state bad tip")
+                Log.e("lzt", "on player info: network state bad tip")
                 subject.onNext(PlayerCommand.NetStateBad)
             }
             NEPlayStatusType.NELP_FIRST_VIDEO_RENDERED -> {
@@ -557,20 +557,11 @@ class NEPlayerStrategy(
      * 回调当前播放进度
      */
     private fun onVodTickerTimer() {
-        var current: Long = -1
-        var duration: Long = -1
-        var cached: Long = -1
-        mMediaPlayer?.let {
-            current = it.currentPosition
-            duration = it.duration
-            cached = it.playableDuration
-        }
-        val c = current
-        val d = duration
-        val cc = cached
-        if (c >= 0 && d > 0) {
-            subject.onNext(PlayerCommand.CurrentProgress(c, d, 100.0f * c / d, cc))
-        }
+        val current: Long = mMediaPlayer!!.currentPosition
+        val duration: Long = mMediaPlayer!!.duration
+        val cached: Long = mMediaPlayer!!.playableDuration
+        val progress = 100f * current / duration
+        subject.onNext(PlayerCommand.CurrentProgress(current, duration, progress, cached))
     }
 
     /**
@@ -578,7 +569,7 @@ class NEPlayerStrategy(
      */
     override fun startVodTimer() {
         stopVodTimer()
-        vodTimer = Timer("TICKER_TIMER")
+        vodTimer = Timer()
         vodTimerTask = object : TimerTask() {
             override fun run() {
                 onVodTickerTimer()

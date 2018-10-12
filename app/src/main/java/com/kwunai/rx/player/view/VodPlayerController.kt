@@ -191,7 +191,9 @@ class VodPlayerController @JvmOverloads constructor(
     }
 
     override fun onClickUiToggle() {
-        ivLock.visible(ivLock.visibility == View.GONE)
+        if (player.getPlayMode() == PlayerMode.MODE_FULL_SCREEN) {
+            ivLock.visible(ivLock.visibility == View.GONE)
+        }
         isLock.no { doShowHideTopOrBottom(controllerVisible) }
     }
 
