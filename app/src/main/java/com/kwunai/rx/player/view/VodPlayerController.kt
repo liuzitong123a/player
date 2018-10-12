@@ -7,7 +7,6 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
-import android.widget.FrameLayout
 import com.kwunai.rx.player.R
 import com.kwunai.rx.player.modal.PlayMode
 import kotlinx.android.synthetic.main.widgets_video_controller.view.*
@@ -19,13 +18,10 @@ import com.kwunai.rx.player.modal.PlayerState.*
 /**
  * 视频播放器控制层
  */
-class VideoController @JvmOverloads constructor(
-        context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
-) : FrameLayout(context, attrs, defStyleAttr), View.OnClickListener
-        , SeekBar.OnSeekBarChangeListener {
-
-
-    private lateinit var player: ILifecyclePlayer
+class VodPlayerController @JvmOverloads constructor(
+        context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0)
+    : DefaultVideoController(context, attrs, defStyleAttr),
+        View.OnClickListener, SeekBar.OnSeekBarChangeListener {
 
     private var controllerVisible: Boolean = false
 
@@ -36,20 +32,13 @@ class VideoController @JvmOverloads constructor(
         ibFullScreen.setOnClickListener(this)
         ivPause.setOnClickListener(this)
         seekBar.setOnSeekBarChangeListener(this)
-        setOnClickListener(this)
-    }
-
-    /**
-     * 绑定播放器
-     */
-    fun setVideoPlayer(player: ILifecyclePlayer) {
-        this.player = player
+        setOnTouchListener(this)
     }
 
     /**
      * 播放器的播放回调发生变化时
      */
-    fun onPlayCommandChanged(command: PlayerCommand) {
+    override fun onPlayCommandChanged(command: PlayerCommand) {
         when (command) {
             is PlayerCommand.Preparing -> {
                 Log.e("lzt", "Preparing")
@@ -98,7 +87,7 @@ class VideoController @JvmOverloads constructor(
     /**
      * 播放器的播放模式发生变化时
      */
-    fun onPlayModeChanged(playerMode: PlayMode) {
+    override fun onPlayModeChanged(playerMode: PlayMode) {
         changeBottomSize(playerMode)
     }
 
@@ -145,21 +134,46 @@ class VideoController @JvmOverloads constructor(
                     player.start()
                 }
             }
-            this -> {
-                showController(controllerVisible)
-            }
         }
     }
 
-    private fun showController(visible: Boolean) {
+    override fun onClickUiToggle() {
         (player.getCurrentState().state == PLAYING ||
                 player.getCurrentState().state == PAUSED).yes {
-            mLVideoBottom.visible(visible)
+            mLVideoBottom.visible(controllerVisible)
             (player.getPlayMode() == PlayMode.MODE_FULL_SCREEN).yes {
-                visible.no { context.hideBar() }.otherwise { context.showBar(systemFlag) }
+                controllerVisible.no { context.hideBar() }.otherwise { context.showBar(systemFlag) }
             }
-            controllerVisible = !visible
+            controllerVisible = !controllerVisible
         }
+    }
+
+    override fun isLock(): Boolean {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun showChangePosition(duration: Long, newPositionProgress: Int) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun hideChangePosition() {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun showChangeVolume(newVolumeProgress: Int) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun hideChangeVolume() {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun showChangeBrightness(newBrightnessProgress: Int) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun hideChangeBrightness() {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {

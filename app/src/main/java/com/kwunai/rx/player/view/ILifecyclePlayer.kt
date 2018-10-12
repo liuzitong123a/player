@@ -42,5 +42,13 @@ interface ILifecyclePlayer : LifecycleObserver {
 
     fun getCurrentState(): StateInfo
 
+    fun getCurrentPosition(): Long
+
     fun getDuration(): Long
+
+    fun getMaxVolume(): Int
+
+    fun getVolume(): Int
+
+    fun setVolume(volume: Int)
 }

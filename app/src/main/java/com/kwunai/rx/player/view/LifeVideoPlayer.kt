@@ -25,7 +25,6 @@ class LifeVideoPlayer @JvmOverloads constructor(
         context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : FrameLayout(context, attrs, defStyleAttr), ILifecyclePlayer {
 
-
     // 当前播放器屏幕的状态
     private var currentPlayMode = PlayMode.MODE_NORMAL
 
@@ -42,7 +41,7 @@ class LifeVideoPlayer @JvmOverloads constructor(
     }
 
     // 视频播放器控制器，处理UI
-    private lateinit var controller: VideoController
+    private lateinit var controller: DefaultVideoController
 
     init {
         context.transparentBar()
@@ -55,7 +54,7 @@ class LifeVideoPlayer @JvmOverloads constructor(
     /**
      * 设置视频的控制器
      */
-    fun setController(controller: VideoController) {
+    fun setController(controller: DefaultVideoController) {
         container.removeView(controller)
         this.controller = controller
         controller.setVideoPlayer(this)
@@ -137,6 +136,11 @@ class LifeVideoPlayer @JvmOverloads constructor(
     }
 
     /**
+     * 获取当前视频播放位置
+     */
+    override fun getCurrentPosition(): Long = playerStrategy?.getCurrentPosition() ?: 0
+
+    /**
      * 获取当前视频总长度
      */
     override fun getDuration(): Long = playerStrategy?.getDuration() ?: 0
@@ -186,6 +190,23 @@ class LifeVideoPlayer @JvmOverloads constructor(
      * 获取当前播放器状态
      */
     override fun getCurrentState(): StateInfo = playerStrategy!!.getCurrentState()
+
+    /**
+     * 获取最大音量
+     */
+    override fun getMaxVolume(): Int = playerStrategy!!.getMaxVolume()
+
+    /**
+     * 获取当前音量
+     */
+    override fun getVolume(): Int = playerStrategy!!.getVolume()
+
+    /**
+     * 改变音量
+     */
+    override fun setVolume(volume: Int) {
+        playerStrategy?.setVolume(volume)
+    }
 
     /**
      * 监听生命周期的onCreate方法
