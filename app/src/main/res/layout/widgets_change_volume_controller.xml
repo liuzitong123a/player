@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/mLChangeVolume"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_centerInParent="true"
+    android:background="@drawable/bg_radius"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="8dp"
+    android:visibility="gone">
+
+    <android.support.v7.widget.AppCompatImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@mipmap/ic_player_volume" />
+
+    <ProgressBar
+        android:id="@+id/mChangeVolumeProgress"
+        style="@android:style/Widget.ProgressBar.Horizontal"
+        android:layout_width="100dp"
+        android:layout_height="2dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="4dp"
+        android:max="100"
+        android:progressDrawable="@drawable/pb_change" />
+</LinearLayout>

@@ -19,6 +19,8 @@ interface ILifecyclePlayer : LifecycleObserver {
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
     fun onStop(@NotNull lifecycleOwner: LifecycleOwner)
 
+    fun onBackPressed(): Boolean
+
     @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
     fun onDestroy(@NotNull lifecycleOwner: LifecycleOwner)
 

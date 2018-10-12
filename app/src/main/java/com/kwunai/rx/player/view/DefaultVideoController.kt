@@ -11,7 +11,6 @@ import android.view.GestureDetector
 import com.kwunai.rx.player.modal.PlayerState
 import com.kwunai.rx.player.ext.scanForActivity
 
-
 abstract class DefaultVideoController @JvmOverloads constructor(
         context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : FrameLayout(context, attrs, defStyleAttr), View.OnTouchListener {

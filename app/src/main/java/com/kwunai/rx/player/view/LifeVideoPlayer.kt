@@ -28,6 +28,7 @@ class LifeVideoPlayer @JvmOverloads constructor(
     // 当前播放器屏幕的状态
     private var currentPlayMode = PlayerMode.MODE_NORMAL
 
+    // 播放核心
     private var playerStrategy: PlayerStrategy? = null
 
     // 视频所需要的播放组件
@@ -78,18 +79,20 @@ class LifeVideoPlayer @JvmOverloads constructor(
      * 开始播放
      */
     override fun start() {
-
         playerStrategy!!.start()
     }
 
+    /**
+     * 暂停
+     */
     override fun pause() {
         playerStrategy!!.pause()
     }
 
-    override fun isPlaying(): Boolean {
-        return playerStrategy!!.isPlaying()
-    }
-
+    /**
+     * 是否正在播放
+     */
+    override fun isPlaying(): Boolean = playerStrategy!!.isPlaying()
 
     /**
      * 释放VideoPlayer
@@ -232,8 +235,10 @@ class LifeVideoPlayer @JvmOverloads constructor(
         playerStrategy?.onActivityStop()
     }
 
-
-    fun onBackPressed(): Boolean {
+    /**
+     * 回退拦截方法
+     */
+    override fun onBackPressed(): Boolean {
         if (getPlayMode() == PlayerMode.MODE_FULL_SCREEN) {
             return exitFullscreenWindow()
         }
@@ -244,9 +249,7 @@ class LifeVideoPlayer @JvmOverloads constructor(
      * 监听生命周期的onDestroy方法
      */
     override fun onDestroy(lifecycleOwner: LifecycleOwner) {
-        Log.e("lzt", "player onDestroy")
         releasePlayer()
     }
-
 
 }

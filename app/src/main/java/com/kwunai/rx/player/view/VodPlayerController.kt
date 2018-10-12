@@ -8,11 +8,17 @@ import android.util.Log
 import android.view.View
 import com.kwunai.rx.player.R
 import com.kwunai.rx.player.modal.PlayerMode
-import kotlinx.android.synthetic.main.widgets_video_controller.view.*
 import android.widget.SeekBar
 import com.kwunai.rx.player.core.PlayerCommand
 import com.kwunai.rx.player.ext.*
 import com.kwunai.rx.player.modal.PlayerState.*
+import kotlinx.android.synthetic.main.widgets_video_controller.view.*
+import kotlinx.android.synthetic.main.widgets_bottom_controller.view.*
+import kotlinx.android.synthetic.main.widgets_loading_controller.view.*
+import kotlinx.android.synthetic.main.widgets_change_brightness_controller.view.*
+import kotlinx.android.synthetic.main.widgets_change_progress_controller.view.*
+import kotlinx.android.synthetic.main.widgets_change_volume_controller.view.*
+
 
 /**
  * 点播视频播放器控制层
@@ -194,30 +200,63 @@ class VodPlayerController @JvmOverloads constructor(
         isLock.no { doPauseOrRestart() }
     }
 
+    /**
+     * 获取是否是锁屏模式
+     * @return true表示锁屏
+     */
     override fun isLock(): Boolean = isLock
 
+    /**
+     * 显示视频播放位置
+     * @param duration            视频总时长ms
+     * @param newPositionProgress 新的位置进度，取值0到100。
+     */
     override fun showChangePosition(duration: Long, newPositionProgress: Int) {
-        Log.e("lzt", "newPositionProgress:$newPositionProgress")
+        mLChangePosition.visible(true)
+        val newPosition = (duration * newPositionProgress / 100f).toLong()
+        mTvChangePosition.text = stringForTime(newPosition)
+        mChangePositionProgress.progress = newPositionProgress
+        seekBar.progress = newPositionProgress
+        tvStartTime.text = stringForTime(newPosition)
     }
 
+    /**
+     * 隐藏视频播放位置
+     */
     override fun hideChangePosition() {
-        Log.e("lzt", "hideChangePosition")
+        mLChangePosition.visible(false)
     }
 
+    /**
+     * 展示视频播放音量
+     * @param newVolumeProgress 新的音量进度，取值1到100。
+     */
     override fun showChangeVolume(newVolumeProgress: Int) {
-        Log.e("lzt", "newVolumeProgress:$newVolumeProgress")
+        mLChangeVolume.visible(true)
+        mChangeVolumeProgress.progress = newVolumeProgress
     }
 
+    /**
+     * 隐藏视频播放音量
+     */
     override fun hideChangeVolume() {
-        Log.e("lzt", "hideChangeVolume")
+        mLChangeVolume.visible(false)
     }
 
+    /**
+     * 展示视频播放亮度
+     * @param newBrightnessProgress 新的亮度进度，取值1到100。
+     */
     override fun showChangeBrightness(newBrightnessProgress: Int) {
-        Log.e("lzt", "newBrightnessProgress:$newBrightnessProgress")
+        mLChangeBrightness.visible(true)
+        mChangeBrightnessProgress.progress = newBrightnessProgress
     }
 
+    /**
+     * 隐藏视频播放亮度
+     */
     override fun hideChangeBrightness() {
-        Log.e("lzt", "hideChangeBrightness")
+        mLChangeBrightness.visible(false)
     }
 
     override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
