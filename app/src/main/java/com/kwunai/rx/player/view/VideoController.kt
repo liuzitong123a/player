@@ -5,6 +5,7 @@ import android.os.Build
 
 import android.util.AttributeSet
 import android.util.Log
+import android.view.MotionEvent
 import android.view.View
 import android.widget.FrameLayout
 import com.kwunai.rx.player.R
@@ -20,7 +21,9 @@ import com.kwunai.rx.player.modal.PlayerState.*
  */
 class VideoController @JvmOverloads constructor(
         context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
-) : FrameLayout(context, attrs, defStyleAttr), View.OnClickListener, SeekBar.OnSeekBarChangeListener {
+) : FrameLayout(context, attrs, defStyleAttr), View.OnClickListener
+        , SeekBar.OnSeekBarChangeListener {
+
 
     private lateinit var player: ILifecyclePlayer
 
@@ -175,4 +178,5 @@ class VideoController @JvmOverloads constructor(
         player.seekTo(position)
         player.startTimer()
     }
+
 }
