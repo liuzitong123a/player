@@ -9,6 +9,7 @@ import android.view.View
 import com.kwunai.rx.player.R
 import com.kwunai.rx.player.modal.PlayerMode
 import android.widget.SeekBar
+import com.kwunai.rx.player.callback.OnCompletedCallback
 import com.kwunai.rx.player.core.PlayerCommand
 import com.kwunai.rx.player.ext.*
 import com.kwunai.rx.player.modal.PlayerState.*
@@ -32,6 +33,8 @@ class VodPlayerController @JvmOverloads constructor(
     private var isLock: Boolean = false
 
     private var systemFlag = systemUiVisibility
+
+    private var onCompletedCallback: OnCompletedCallback? = null
 
     init {
         View.inflate(context, R.layout.widgets_video_controller, this)
@@ -68,6 +71,9 @@ class VodPlayerController @JvmOverloads constructor(
                 Log.e("lzt", "Error:${command.code}${command.extra}")
                 mLoadingView.visibility = View.GONE
                 mLVideoBottom.visibility = View.GONE
+            }
+            is PlayerCommand.Completion -> {
+                onCompletedCallback?.doCompleted()
             }
             is PlayerCommand.StateChanged -> {
                 when {
@@ -276,5 +282,10 @@ class VodPlayerController @JvmOverloads constructor(
         val position = (player.getDuration() * seekBar.progress / 100f).toLong()
         player.seekTo(position)
         player.startTimer()
+    }
+
+
+    fun setOnCompletedCallack(onCompletedCallback: OnCompletedCallback) {
+        this.onCompletedCallback = onCompletedCallback
     }
 }

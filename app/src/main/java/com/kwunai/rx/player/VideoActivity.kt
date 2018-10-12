@@ -3,16 +3,20 @@ package com.kwunai.rx.player
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.os.Bundle
+
 import android.support.v7.app.AppCompatActivity
 import android.view.View
+import com.bumptech.glide.Glide
+import com.kwunai.rx.player.callback.OnCompletedCallback
 import com.kwunai.rx.player.ext.*
 import com.kwunai.rx.player.view.LifeVideoPlayer
 import com.kwunai.rx.player.view.VodPlayerController
 import kotlinx.android.synthetic.main.activity_main.*
 
-class VideoActivity : AppCompatActivity() {
+class VideoActivity : AppCompatActivity(), OnCompletedCallback {
 
-    private val url = "https://outin-8ad9d45c9a0711e89d5a00163e024c6a.oss-cn-shanghai.aliyuncs.com/ebd13d6e7c73455c8959de39e756bf73/95a605e8e4b843cf804ae075ce35bb51-4e47ec5efbf3b20c134310eaa5dcf1ca-od-S00000001-200000.mp4?Expires=1539393456&OSSAccessKeyId=LTAInFumgYEtNMvC&Signature=xwe31AUXHZfRiYcZpcpNVZUvt1w%3D"
+    private val url = ""
+    private val coverUrl = ""
 
     private val player: LifeVideoPlayer by lazy {
         mPlayer.apply { lifecycle.addObserver(this) }
@@ -22,10 +26,17 @@ class VideoActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         fitNotchScreen()
-        player.createPlayerConfig(url)
+        Glide.with(this).load(coverUrl).into(mIvCover)
         val controller = VodPlayerController(this)
+        controller.setOnCompletedCallack(this)
         player.setController(controller)
-        player.start()
+        mIvStartPlayer.setOnClickListener {
+            mIvCover.visible(false)
+            mIvStartPlayer.visible(false)
+            player.createPlayerConfig(url)
+            player.start()
+        }
+        mIvBack.setOnClickListener { finish()}
     }
 
     private fun fitNotchScreen() {
@@ -56,5 +67,10 @@ class VideoActivity : AppCompatActivity() {
                 systemView.visibility = View.VISIBLE
             }
         }
+    }
+
+    override fun doCompleted() {
+        mIvCover.visible(true)
+        mIvStartPlayer.visible(true)
     }
 }

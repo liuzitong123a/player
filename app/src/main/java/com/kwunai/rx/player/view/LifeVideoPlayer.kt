@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.util.AttributeSet
-import android.util.Log
 import android.view.Gravity
 import android.view.ViewGroup
 import android.view.Window
@@ -29,7 +28,7 @@ class LifeVideoPlayer @JvmOverloads constructor(
     private var currentPlayMode = PlayerMode.MODE_NORMAL
 
     // 播放核心
-    private var playerStrategy: PlayerStrategy? = null
+    private var playerStrategy: PlayerStrategy? = NEPlayerManager.configPlayer(context)
 
     // 视频所需要的播放组件
     private val surfaceView by lazy {
@@ -65,11 +64,11 @@ class LifeVideoPlayer @JvmOverloads constructor(
         container.addView(controller, params)
     }
 
+
     /**
      * 外层配置
      */
     fun createPlayerConfig(path: String) {
-        playerStrategy = NEPlayerManager.configPlayer(context)
         playerStrategy!!.setUp(path)
         playerStrategy!!.setupRenderView(surfaceView, VideoScaleMode.FIT)
         addSurfaceView()
