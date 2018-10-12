@@ -13,7 +13,7 @@ import android.widget.FrameLayout
 import com.kwunai.rx.player.neplayer.NEPlayerManager
 import com.kwunai.rx.player.core.PlayerStrategy
 import com.kwunai.rx.player.ext.*
-import com.kwunai.rx.player.modal.PlayMode
+import com.kwunai.rx.player.modal.PlayerMode
 import com.kwunai.rx.player.modal.StateInfo
 import com.kwunai.rx.player.modal.VideoScaleMode
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -26,7 +26,7 @@ class LifeVideoPlayer @JvmOverloads constructor(
 ) : FrameLayout(context, attrs, defStyleAttr), ILifecyclePlayer {
 
     // 当前播放器屏幕的状态
-    private var currentPlayMode = PlayMode.MODE_NORMAL
+    private var currentPlayMode = PlayerMode.MODE_NORMAL
 
     private var playerStrategy: PlayerStrategy? = null
 
@@ -157,15 +157,15 @@ class LifeVideoPlayer @JvmOverloads constructor(
                 ViewGroup.LayoutParams.MATCH_PARENT
         )
         contentView?.addView(container, params)
-        currentPlayMode = PlayMode.MODE_FULL_SCREEN
-        controller.onPlayModeChanged(PlayMode.MODE_FULL_SCREEN)
+        currentPlayMode = PlayerMode.MODE_FULL_SCREEN
+        controller.onPlayModeChanged(PlayerMode.MODE_FULL_SCREEN)
     }
 
     /**
      * 退出模式
      */
     override fun exitFullscreenWindow(): Boolean {
-        (currentPlayMode == PlayMode.MODE_FULL_SCREEN).yes {
+        (currentPlayMode == PlayerMode.MODE_FULL_SCREEN).yes {
             context.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
             val contentView = scanForActivity(context)?.findViewById<ViewGroup>(Window.ID_ANDROID_CONTENT)
             contentView?.removeView(container)
@@ -174,8 +174,8 @@ class LifeVideoPlayer @JvmOverloads constructor(
                     ViewGroup.LayoutParams.MATCH_PARENT
             )
             this.addView(container, params)
-            currentPlayMode = PlayMode.MODE_NORMAL
-            controller.onPlayModeChanged(PlayMode.MODE_NORMAL)
+            currentPlayMode = PlayerMode.MODE_NORMAL
+            controller.onPlayModeChanged(PlayerMode.MODE_NORMAL)
             return true
         }
         return false
@@ -184,7 +184,7 @@ class LifeVideoPlayer @JvmOverloads constructor(
     /**
      * 获取当前屏幕状态
      */
-    override fun getPlayMode(): PlayMode = currentPlayMode
+    override fun getPlayMode(): PlayerMode = currentPlayMode
 
     /**
      * 获取当前播放器状态
@@ -234,7 +234,7 @@ class LifeVideoPlayer @JvmOverloads constructor(
 
 
     fun onBackPressed(): Boolean {
-        if (getPlayMode() == PlayMode.MODE_FULL_SCREEN) {
+        if (getPlayMode() == PlayerMode.MODE_FULL_SCREEN) {
             return exitFullscreenWindow()
         }
         return false

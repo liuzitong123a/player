@@ -6,7 +6,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.widget.FrameLayout
 import com.kwunai.rx.player.core.PlayerCommand
-import com.kwunai.rx.player.modal.PlayMode
+import com.kwunai.rx.player.modal.PlayerMode
 import android.view.GestureDetector
 import com.kwunai.rx.player.modal.PlayerState
 import com.kwunai.rx.player.ext.scanForActivity
@@ -60,7 +60,7 @@ abstract class DefaultVideoController @JvmOverloads constructor(
     /**
      * 播放器显示模式改变
      */
-    abstract fun onPlayModeChanged(playerMode: PlayMode)
+    abstract fun onPlayModeChanged(playerMode: PlayerMode)
 
     /**
      * 单击屏幕改变UI
@@ -68,28 +68,33 @@ abstract class DefaultVideoController @JvmOverloads constructor(
     abstract fun onClickUiToggle()
 
     /**
+     * [点播]
      * 点播双击暂停
      */
-    protected fun touchDoubleUp() {
+    protected open fun touchDoubleUp() {
 
     }
 
     /**
+     * [点播]
      * 手势左右滑动改变播放位置时，显示控制器中间的播放位置变化视图，
      * 在手势滑动ACTION_MOVE的过程中，会不断调用此方法。
      *
      * @param duration            视频总时长ms
      * @param newPositionProgress 新的位置进度，取值0到100。
      */
-    protected abstract fun showChangePosition(duration: Long, newPositionProgress: Int)
+    protected open fun showChangePosition(duration: Long, newPositionProgress: Int) {
 
+    }
 
     /**
+     * [点播]
      * 手势左右滑动改变播放位置后，手势up或者cancel时，隐藏控制器中间的播放位置变化视图，
      * 在手势ACTION_UP或ACTION_CANCEL时调用。
      */
-    protected abstract fun hideChangePosition()
+    protected open fun hideChangePosition() {
 
+    }
 
     /**
      * 手势在右侧上下滑动改变音量时，显示控制器中间的音量变化视图，
@@ -97,13 +102,13 @@ abstract class DefaultVideoController @JvmOverloads constructor(
      *
      * @param newVolumeProgress 新的音量进度，取值1到100。
      */
-    protected abstract fun showChangeVolume(newVolumeProgress: Int)
+    abstract fun showChangeVolume(newVolumeProgress: Int)
 
     /**
      * 手势在左侧上下滑动改变音量后，手势up或者cancel时，隐藏控制器中间的音量变化视图，
      * 在手势ACTION_UP或ACTION_CANCEL时调用。
      */
-    protected abstract fun hideChangeVolume()
+    abstract fun hideChangeVolume()
 
     /**
      * 手势在左侧上下滑动改变亮度时，显示控制器中间的亮度变化视图，
@@ -111,13 +116,13 @@ abstract class DefaultVideoController @JvmOverloads constructor(
      *
      * @param newBrightnessProgress 新的亮度进度，取值1到100。
      */
-    protected abstract fun showChangeBrightness(newBrightnessProgress: Int)
+    abstract fun showChangeBrightness(newBrightnessProgress: Int)
 
     /**
      * 手势在左侧上下滑动改变亮度后，手势up或者cancel时，隐藏控制器中间的亮度变化视图，
      * 在手势ACTION_UP或ACTION_CANCEL时调用。
      */
-    protected abstract fun hideChangeBrightness()
+    abstract fun hideChangeBrightness()
 
     /**
      * 手势事件
@@ -156,7 +161,7 @@ abstract class DefaultVideoController @JvmOverloads constructor(
                     var deltaY = y - mDownY
                     val absDeltaX = Math.abs(deltaX)
                     val absDeltaY = Math.abs(deltaY)
-                    if (player.getPlayMode() == PlayMode.MODE_FULL_SCREEN && !isLock()) {
+                    if (player.getPlayMode() == PlayerMode.MODE_FULL_SCREEN && !isLock()) {
                         if (!mChangePosition && !mChangeVolume && !mChangeBrightness) {
                             if (absDeltaX >= mThreshold) {
                                 player.stopTimer()
@@ -164,11 +169,9 @@ abstract class DefaultVideoController @JvmOverloads constructor(
                                 mGestureDownPosition = player.getCurrentPosition()
                             } else if (absDeltaY >= mThreshold) {
                                 if (mDownX < width * 0.5f) {
-                                    // 左侧改变亮度
                                     mChangeBrightness = true
                                     mGestureDownBrightness = scanForActivity(context)!!.window.attributes.screenBrightness
                                 } else {
-                                    // 右侧改变声音
                                     mChangeVolume = true
                                     mGestureDownVolume = player.getVolume()
                                 }
@@ -194,7 +197,7 @@ abstract class DefaultVideoController @JvmOverloads constructor(
                         val newBrightnessProgress = (100f * newBrightnessPercentage).toInt()
                         showChangeBrightness(newBrightnessProgress)
                     }
-                    if (mChangePosition) {
+                    if (mChangeVolume) {
                         deltaY = -deltaY
                         val maxVolume = player.getMaxVolume()
                         val deltaVolume = (maxVolume.toFloat() * deltaY * 3f / height).toInt()
@@ -205,6 +208,7 @@ abstract class DefaultVideoController @JvmOverloads constructor(
                         showChangeVolume(newVolumeProgress)
                     }
                 }
+                MotionEvent.ACTION_CANCEL,
                 MotionEvent.ACTION_UP -> {
                     if (mChangePosition) {
                         player.seekTo(mNewPosition)

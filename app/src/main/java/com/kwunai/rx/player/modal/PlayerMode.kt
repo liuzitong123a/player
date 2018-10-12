@@ -1,6 +1,6 @@
 package com.kwunai.rx.player.modal
 
-enum class PlayMode {
+enum class PlayerMode {
 
     MODE_NORMAL,
 

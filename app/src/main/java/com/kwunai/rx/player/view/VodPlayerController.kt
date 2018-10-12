@@ -5,10 +5,9 @@ import android.os.Build
 
 import android.util.AttributeSet
 import android.util.Log
-import android.view.MotionEvent
 import android.view.View
 import com.kwunai.rx.player.R
-import com.kwunai.rx.player.modal.PlayMode
+import com.kwunai.rx.player.modal.PlayerMode
 import kotlinx.android.synthetic.main.widgets_video_controller.view.*
 import android.widget.SeekBar
 import com.kwunai.rx.player.core.PlayerCommand
@@ -16,14 +15,15 @@ import com.kwunai.rx.player.ext.*
 import com.kwunai.rx.player.modal.PlayerState.*
 
 /**
- * 视频播放器控制层
+ * 点播视频播放器控制层
  */
 class VodPlayerController @JvmOverloads constructor(
         context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0)
-    : DefaultVideoController(context, attrs, defStyleAttr),
-        View.OnClickListener, SeekBar.OnSeekBarChangeListener {
+    : DefaultVideoController(context, attrs, defStyleAttr), View.OnClickListener, SeekBar.OnSeekBarChangeListener {
 
     private var controllerVisible: Boolean = false
+
+    private var isLock: Boolean = false
 
     private var systemFlag = systemUiVisibility
 
@@ -31,6 +31,7 @@ class VodPlayerController @JvmOverloads constructor(
         View.inflate(context, R.layout.widgets_video_controller, this)
         ibFullScreen.setOnClickListener(this)
         ivPause.setOnClickListener(this)
+        ivLock.setOnClickListener(this)
         seekBar.setOnSeekBarChangeListener(this)
         setOnTouchListener(this)
     }
@@ -87,8 +88,19 @@ class VodPlayerController @JvmOverloads constructor(
     /**
      * 播放器的播放模式发生变化时
      */
-    override fun onPlayModeChanged(playerMode: PlayMode) {
+    override fun onPlayModeChanged(playerMode: PlayerMode) {
         changeBottomSize(playerMode)
+        when (playerMode) {
+            PlayerMode.MODE_NORMAL -> {
+                ivLock.visible(false)
+                ibFullScreen.isSelected = false
+                isLock = false
+            }
+            PlayerMode.MODE_FULL_SCREEN -> {
+                ivLock.visible(true)
+                ibFullScreen.isSelected = true
+            }
+        }
     }
 
     /**
@@ -96,9 +108,9 @@ class VodPlayerController @JvmOverloads constructor(
      * 横屏 50dp
      * 竖屏 40dp
      */
-    private fun changeBottomSize(playerMode: PlayMode) {
+    private fun changeBottomSize(playerMode: PlayerMode) {
         val layoutParams = mLVideoBottom.layoutParams
-        val width = if (playerMode == PlayMode.MODE_NORMAL) {
+        val width = if (playerMode == PlayerMode.MODE_NORMAL) {
             context.getScreenWidth()
         } else {
             (context.hasNavBar()).yes {
@@ -107,7 +119,7 @@ class VodPlayerController @JvmOverloads constructor(
                 context.getScreenWidth()
             }
         }
-        val height = if (playerMode == PlayMode.MODE_NORMAL) {
+        val height = if (playerMode == PlayerMode.MODE_NORMAL) {
             context.dp2px(40f)
         } else {
             context.dp2px(50f)
@@ -120,60 +132,92 @@ class VodPlayerController @JvmOverloads constructor(
 
     override fun onClick(v: View) {
         when (v) {
-            ibFullScreen -> {
-                (player.getPlayMode() == PlayMode.MODE_NORMAL).yes {
-                    player.startFullscreenWindow()
-                }.otherwise {
-                    player.exitFullscreenWindow()
-                }
+            ibFullScreen -> doStartOrExitFullscreenWindow()
+            ivPause -> doPauseOrRestart()
+            ivLock -> doLock()
+        }
+    }
+
+    /**
+     * 进入或者退出全屏
+     */
+    private fun doStartOrExitFullscreenWindow() {
+        (player.getPlayMode() == PlayerMode.MODE_NORMAL).yes {
+            player.startFullscreenWindow()
+        }.otherwise {
+            player.exitFullscreenWindow()
+        }
+    }
+
+    /**
+     * 暂停或者重新播放
+     */
+    private fun doPauseOrRestart() {
+        (player.isPlaying()).yes {
+            player.pause()
+        }.otherwise {
+            player.start()
+        }
+    }
+
+    /**
+     * 锁屏或者解锁
+     */
+    private fun doLock() {
+        ivLock.isSelected = !isLock
+        isLock = !isLock
+        doShowHideTopOrBottom(!isLock)
+    }
+
+    /**
+     * 显示或隐藏底部控制器和顶部控制器
+     */
+    private fun doShowHideTopOrBottom(visible: Boolean) {
+        (player.getCurrentState().state == PLAYING ||
+                player.getCurrentState().state == PAUSED).yes {
+            mLVideoBottom.visible(visible)
+            (player.getPlayMode() == PlayerMode.MODE_FULL_SCREEN).yes {
+                visible.no { context.hideBar() }
+                        .otherwise { context.showBar(systemFlag) }
             }
-            ivPause -> {
-                (player.isPlaying()).yes {
-                    player.pause()
-                }.otherwise {
-                    player.start()
-                }
-            }
+            controllerVisible = !visible
         }
     }
 
     override fun onClickUiToggle() {
-        (player.getCurrentState().state == PLAYING ||
-                player.getCurrentState().state == PAUSED).yes {
-            mLVideoBottom.visible(controllerVisible)
-            (player.getPlayMode() == PlayMode.MODE_FULL_SCREEN).yes {
-                controllerVisible.no { context.hideBar() }.otherwise { context.showBar(systemFlag) }
-            }
-            controllerVisible = !controllerVisible
-        }
+        ivLock.visible(ivLock.visibility == View.GONE)
+        isLock.no { doShowHideTopOrBottom(controllerVisible) }
     }
 
-    override fun isLock(): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun touchDoubleUp() {
+        super.touchDoubleUp()
+        isLock.no { doPauseOrRestart() }
     }
+
+    override fun isLock(): Boolean = isLock
 
     override fun showChangePosition(duration: Long, newPositionProgress: Int) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        Log.e("lzt", "newPositionProgress:$newPositionProgress")
     }
 
     override fun hideChangePosition() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        Log.e("lzt", "hideChangePosition")
     }
 
     override fun showChangeVolume(newVolumeProgress: Int) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        Log.e("lzt", "newVolumeProgress:$newVolumeProgress")
     }
 
     override fun hideChangeVolume() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        Log.e("lzt", "hideChangeVolume")
     }
 
     override fun showChangeBrightness(newBrightnessProgress: Int) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        Log.e("lzt", "newBrightnessProgress:$newBrightnessProgress")
     }
 
     override fun hideChangeBrightness() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        Log.e("lzt", "hideChangeBrightness")
     }
 
     override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
@@ -192,5 +236,4 @@ class VodPlayerController @JvmOverloads constructor(
         player.seekTo(position)
         player.startTimer()
     }
-
 }

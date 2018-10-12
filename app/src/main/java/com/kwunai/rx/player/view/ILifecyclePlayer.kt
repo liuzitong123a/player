@@ -4,7 +4,7 @@ import android.arch.lifecycle.Lifecycle
 import android.arch.lifecycle.LifecycleObserver
 import android.arch.lifecycle.LifecycleOwner
 import android.arch.lifecycle.OnLifecycleEvent
-import com.kwunai.rx.player.modal.PlayMode
+import com.kwunai.rx.player.modal.PlayerMode
 import com.kwunai.rx.player.modal.StateInfo
 import org.jetbrains.annotations.NotNull
 
@@ -38,7 +38,7 @@ interface ILifecyclePlayer : LifecycleObserver {
 
     fun exitFullscreenWindow(): Boolean
 
-    fun getPlayMode(): PlayMode
+    fun getPlayMode(): PlayerMode
 
     fun getCurrentState(): StateInfo
 
