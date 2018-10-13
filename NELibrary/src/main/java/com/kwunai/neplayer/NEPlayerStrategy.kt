@@ -314,16 +314,17 @@ class NEPlayerStrategy(
         audioFocusRequest = null
         mAudioManager = null
         stopVodTimer()
-        mMediaPlayer?.let {
-            it.setSurface(null)
-            it.release()
-        }
-
-        mMediaPlayer = null
         renderView?.let {
             it.setCallback(null)
             it.releaseRender()
         }
+        mMediaPlayer?.let {
+            it.setSurface(null)
+            it.release()
+        }
+        mMediaPlayer = null
+        connectWatcher?.shutdown()
+        connectWatcher = null
         setCurrentState(PlayerState.STOPPED, CauseCode.CODE_VIDEO_STOPPED_BY_MANUAL)
     }
 

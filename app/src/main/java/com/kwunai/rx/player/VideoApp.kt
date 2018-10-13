@@ -1,9 +1,9 @@
-package com.kwunai.rx.player.neplayer
+package com.kwunai.rx.player
 
 import android.app.Application
 import com.kwunai.neplayer.NEPlayerManager
 
-class NEVideoApp : Application() {
+class VideoApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
