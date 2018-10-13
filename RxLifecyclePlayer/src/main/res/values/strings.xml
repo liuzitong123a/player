@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">RxLifecyclePlayer</string>
+    <string name="loading">正在缓冲…</string>
+    <string name="player_error">播放错误，请重试。</string>
+</resources>

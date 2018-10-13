@@ -1,4 +1,3 @@
 <resources>
     <string name="app_name">RxPlayer</string>
-    <string name="loading">正在缓冲…</string>
 </resources>

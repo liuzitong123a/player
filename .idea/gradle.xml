@@ -9,6 +9,8 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/NELibrary" />
+            <option value="$PROJECT_DIR$/RxLifecyclePlayer" />
             <option value="$PROJECT_DIR$/app" />
           </set>
         </option>

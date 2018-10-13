@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".VideoActivity">
+    tools:context=".neplayer.NEVideoActivity">
 
     <View
         android:id="@+id/systemView"
@@ -13,7 +13,7 @@
         android:background="@android:color/black"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <com.kwunai.rx.player.view.LifeVideoPlayer
+    <com.kwunai.player.core.DefaultLifeVideoPlayer
         android:id="@+id/mPlayer"
         android:layout_width="match_parent"
         android:layout_height="0dp"

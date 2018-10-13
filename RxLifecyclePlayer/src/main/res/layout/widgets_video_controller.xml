@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!--加载动画view-->
+    <include layout="@layout/widgets_loading_controller" />
+    <!--改变播放位置-->
+    <include layout="@layout/widgets_change_progress_controller" />
+    <!--改变亮度-->
+    <include layout="@layout/widgets_change_brightness_controller" />
+    <!--播放错误-->
+    <include layout="@layout/widgets_error_controller" />
+    <!--改变声音-->
+    <include layout="@layout/widgets_change_volume_controller" />
+    <!--顶部控制区-->
+    <include layout="@layout/widgets_top_controller" />
+    <!--底部控制区-->
+    <include layout="@layout/widgets_bottom_controller" />
+
+    <!--视频播放器锁屏-->
+    <android.support.v7.widget.AppCompatImageView
+        android:id="@+id/ivLock"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:src="@drawable/selector_video_lock"
+        android:visibility="gone" />
+
+</RelativeLayout>
