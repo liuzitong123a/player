@@ -235,7 +235,7 @@ class DefaultLifeVideoPlayer @JvmOverloads constructor(
      * 监听生命周期的onCreate方法
      */
     override fun onCreate(lifecycleOwner: LifecycleOwner) {
-        playerStrategy!!.subject
+        playerStrategy!!.emit.subject()
                 .observeOn(AndroidSchedulers.mainThread())
                 .bindLifecycle(lifecycleOwner)
                 .subscribe { controller.onPlayCommandChanged(it) }

@@ -185,7 +185,7 @@ class NEPlayerStrategy(
                 it.prepareAsync()
                 Log.e("lzt", "STATE_PREPARING")
                 setCurrentState(PlayerState.PREPARING, 0)
-                subject.onNext(PlayerCommand.Preparing)
+                emit.onNext(PlayerCommand.Preparing)
             } catch (e: IOException) {
                 e.printStackTrace()
             }
@@ -413,7 +413,7 @@ class NEPlayerStrategy(
                 && cause >= NEErrorType.NELP_EN_UNKNOWN_ERROR).no {
             cause = causeCode
         }
-        subject.onNext(PlayerCommand.StateChanged(StateInfo(state, cause)))
+        emit.onNext(PlayerCommand.StateChanged(StateInfo(state, cause)))
     }
 
     /**
@@ -492,7 +492,7 @@ class NEPlayerStrategy(
         (it.duration > 0).yes { startVodTimer() }
         it.start()
         setCurrentState(PlayerState.PREPARED, 0)
-        subject.onNext(PlayerCommand.Prepared)
+        emit.onNext(PlayerCommand.Prepared)
     }
 
     /**
@@ -502,7 +502,7 @@ class NEPlayerStrategy(
         Log.e("lzt", "onCompletion ——> STATE_STOP")
         resetPlayer()
         scanForActivity(context)?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        subject.onNext(PlayerCommand.Completion)
+        emit.onNext(PlayerCommand.Completion)
         setCurrentState(PlayerState.STOPPED, CauseCode.CODE_VIDEO_STOPPED_AS_ON_COMPLETION)
     }
 
@@ -512,7 +512,7 @@ class NEPlayerStrategy(
     private val onErrorListener = NELivePlayer.OnErrorListener { _, what, extra ->
         Log.e("lzt", "on player error, what=$what, extra=$extra")
         resetPlayer()
-        subject.onNext(PlayerCommand.Error(code = what, extra = extra))
+        emit.onNext(PlayerCommand.Error(code = what, extra = extra))
         setCurrentState(PlayerState.ERROR, what)
         true
     }
@@ -523,7 +523,7 @@ class NEPlayerStrategy(
     private val onVideoParseErrorListener = NELivePlayer.OnVideoParseErrorListener { _ ->
         Log.e("lzt", "on player parse video error")
         setCurrentState(PlayerState.ERROR, CauseCode.CODE_VIDEO_PARSER_ERROR)
-        subject.onNext(PlayerCommand.Error(CauseCode.CODE_VIDEO_PARSER_ERROR, 0))
+        emit.onNext(PlayerCommand.Error(CauseCode.CODE_VIDEO_PARSER_ERROR, 0))
     }
 
     /**
@@ -534,16 +534,16 @@ class NEPlayerStrategy(
             NEPlayStatusType.NELP_BUFFERING_START -> {
                 Log.e("lzt", "on player info: buffering start")
                 stopVodTimer()
-                subject.onNext(PlayerCommand.BufferingStart)
+                emit.onNext(PlayerCommand.BufferingStart)
             }
             NEPlayStatusType.NELP_BUFFERING_END -> {
                 Log.e("lzt", "on player info: buffering end")
                 startVodTimer()
-                subject.onNext(PlayerCommand.BufferingEnd)
+                emit.onNext(PlayerCommand.BufferingEnd)
             }
             NEPlayStatusType.NELP_NET_STATE_BAD -> {
                 Log.e("lzt", "on player info: network state bad tip")
-                subject.onNext(PlayerCommand.NetStateBad)
+                emit.onNext(PlayerCommand.NetStateBad)
             }
             NEPlayStatusType.NELP_FIRST_VIDEO_RENDERED -> {
                 setCurrentState(PlayerState.PLAYING, 0)
@@ -560,7 +560,7 @@ class NEPlayerStrategy(
         val duration: Long = mMediaPlayer!!.duration
         val cached: Long = mMediaPlayer!!.playableDuration
         val progress = 100f * current / duration
-        subject.onNext(PlayerCommand.CurrentProgress(current, duration, progress, cached))
+        emit.onNext(PlayerCommand.CurrentProgress(current, duration, progress, cached))
     }
 
     /**
@@ -615,7 +615,7 @@ class NEPlayerStrategy(
         if (connectWatcher?.getNetworkType() == "WIFI") {
             recoverPlayer(true)
         } else {
-            subject.onNext(PlayerCommand.MobileNet)
+            emit.onNext(PlayerCommand.MobileNet)
         }
     }
 
@@ -643,7 +643,7 @@ class NEPlayerStrategy(
                 savePlayerState()
                 resetPlayer()
                 recoverPlayer(true)
-                subject.onNext(PlayerCommand.WifiNet)
+                emit.onNext(PlayerCommand.WifiNet)
             }
         }
     }

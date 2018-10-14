@@ -2,12 +2,10 @@ package com.kwunai.player.core
 
 import com.kwunai.player.modal.StateInfo
 import com.kwunai.player.modal.VideoScaleMode
-import io.reactivex.subjects.PublishSubject
-import io.reactivex.subjects.Subject
 
 abstract class PlayerStrategy {
 
-    val subject: Subject<PlayerCommand> = PublishSubject.create()
+    val emit: PlayerEmit = PlayerEmit()
 
     abstract fun setUp(url: String)
 
