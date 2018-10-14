@@ -19,6 +19,10 @@ sealed class PlayerCommand {
 
     object NetStateBad : PlayerCommand()
 
+    object MobileNet : PlayerCommand()
+
+    object WifiNet : PlayerCommand()
+
     class Error(val code: Int, val extra: Int) : PlayerCommand()
 
     class StateChanged(val stateInfo: StateInfo) : PlayerCommand()

@@ -7,6 +7,7 @@ import android.os.CountDownTimer
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
+import android.view.ViewParent
 import com.kwunai.player.modal.PlayerMode
 import android.widget.SeekBar
 import com.kwunai.player.R
@@ -19,9 +20,9 @@ import kotlinx.android.synthetic.main.widgets_change_progress_controller.view.*
 import kotlinx.android.synthetic.main.widgets_change_volume_controller.view.*
 import kotlinx.android.synthetic.main.widgets_error_controller.view.*
 import kotlinx.android.synthetic.main.widgets_loading_controller.view.*
+import kotlinx.android.synthetic.main.widgets_mobile_net_controller.view.*
 import kotlinx.android.synthetic.main.widgets_top_controller.view.*
 import kotlinx.android.synthetic.main.widgets_video_controller.view.*
-
 
 /**
  * 点播视频播放器控制层
@@ -50,7 +51,10 @@ class DefaultPlayerController @JvmOverloads constructor(
         ivPause.setOnClickListener(this)
         ivLock.setOnClickListener(this)
         ivRetry.setOnClickListener(this)
+        tvContinue.setOnClickListener(this)
+        ivTopBack.setOnClickListener(this)
         seekBar.setOnSeekBarChangeListener(this)
+        seekBar.setOnTouchListener(this)
         setOnTouchListener(this)
     }
 
@@ -60,7 +64,7 @@ class DefaultPlayerController @JvmOverloads constructor(
     override fun onPlayCommandChanged(command: PlayerCommand) {
         when (command) {
             is PlayerCommand.Preparing -> {
-                Log.e("lzt", "Preparing")
+                Log.e("lzt", "Prepared")
                 mLoadingView.visible(true)
                 mLVideoBottom.visible(false)
                 topLayout.visible(false)
@@ -78,6 +82,7 @@ class DefaultPlayerController @JvmOverloads constructor(
                 mLoadingView.visible(false)
             }
             is PlayerCommand.Error -> {
+                Log.e("lzt", "code:${command.code},extra:${command.extra}")
                 ivLock.visible(false)
                 mLoadingView.visible(false)
                 mLError.visible(true)
@@ -89,17 +94,24 @@ class DefaultPlayerController @JvmOverloads constructor(
                 context.showBar(systemFlag)
                 onCompletedCallback?.doCompleted()
             }
+            is PlayerCommand.MobileNet -> {
+                ivLock.visible(false)
+                mLoadingView.visible(false)
+                mLMobileNet.visible(true)
+                doShowHideTopOrBottom(false)
+            }
+            is PlayerCommand.WifiNet -> {
+                mLMobileNet.visible(false)
+            }
             is PlayerCommand.StateChanged -> {
                 when {
                     command.stateInfo.state == PLAYING -> {
                         ivPause.isSelected = false
                         mLoadingView.visible(false)
-                        startDismissControllerTimer()
                     }
                     command.stateInfo.state == PAUSED -> {
                         ivPause.isSelected = true
                         mLoadingView.visible(false)
-                        cancelDismissControllerTimer()
                     }
                     command.stateInfo.state == STOPPED -> {
                         if (command.stateInfo.causeCode == CODE_VIDEO_STOPPED_AS_NET_UNAVAILABLE) {
@@ -176,6 +188,10 @@ class DefaultPlayerController @JvmOverloads constructor(
             ibFullScreen -> doStartOrExitFullscreenWindow()
             ivPause -> doPauseOrRestart()
             ivLock -> doLock()
+            tvContinue -> {
+                mLMobileNet.visible(false)
+                player.start()
+            }
             ivRetry -> player.start()
             ivTopBack -> player.onBackPressed()
         }
@@ -251,7 +267,7 @@ class DefaultPlayerController @JvmOverloads constructor(
     /**
      * 开始倒计时
      */
-    private fun startDismissControllerTimer() {
+    override fun startDismissControllerTimer() {
         cancelDismissControllerTimer()
         if (mDismissControllerCountDownTimer == null) {
             mDismissControllerCountDownTimer = object : CountDownTimer(DEFAULT_DISMISS_TIME, DEFAULT_DISMISS_TIME) {
@@ -271,7 +287,7 @@ class DefaultPlayerController @JvmOverloads constructor(
     /**
      * 中断倒计时
      */
-    private fun cancelDismissControllerTimer() {
+    override fun cancelDismissControllerTimer() {
         mDismissControllerCountDownTimer?.cancel()
     }
 
@@ -339,9 +355,14 @@ class DefaultPlayerController @JvmOverloads constructor(
 
     }
 
-    override fun onStartTrackingTouch(seekBar: SeekBar?) {
+    override fun onStartTrackingTouch(seekBar: SeekBar) {
         player.stopTimer()
         cancelDismissControllerTimer()
+        var vpDown: ViewParent? = parent
+        while (vpDown != null) {
+            vpDown.requestDisallowInterceptTouchEvent(true)
+            vpDown = vpDown.parent
+        }
     }
 
     override fun onStopTrackingTouch(seekBar: SeekBar) {
@@ -351,6 +372,11 @@ class DefaultPlayerController @JvmOverloads constructor(
         val position = (player.getDuration() * seekBar.progress / 100f).toLong()
         player.seekTo(position)
         player.startTimer()
+        var vpUp: ViewParent? = parent
+        while (vpUp != null) {
+            vpUp.requestDisallowInterceptTouchEvent(false)
+            vpUp = vpUp.parent
+        }
         startDismissControllerTimer()
     }
 

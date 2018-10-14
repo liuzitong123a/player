@@ -50,4 +50,6 @@ abstract class PlayerStrategy {
     abstract fun getVolume(): Int
 
     abstract fun setVolume(volume: Int)
+
+    abstract fun onMobileNetAction()
 }

@@ -53,11 +53,8 @@ class DefaultLifeVideoPlayer @JvmOverloads constructor(
     /**
      * 初始化视频播放器
      */
-    fun init(playerStrategy: PlayerStrategy, renderView: IRenderView? = null) {
+    fun init(playerStrategy: PlayerStrategy) {
         this.playerStrategy = playerStrategy
-        if (renderView == null) {
-
-        }
     }
 
     /**
@@ -88,6 +85,13 @@ class DefaultLifeVideoPlayer @JvmOverloads constructor(
      */
     override fun start() {
         playerStrategy!!.start()
+    }
+
+    /**
+     * 从指定位置开始播放
+     */
+    override fun start(position: Long) {
+        playerStrategy!!.start(position)
     }
 
     /**
@@ -218,6 +222,13 @@ class DefaultLifeVideoPlayer @JvmOverloads constructor(
      */
     override fun setVolume(volume: Int) {
         playerStrategy?.setVolume(volume)
+    }
+
+    /**
+     * 移动网络下的操作
+     */
+    override fun onNetMobileEvent() {
+        playerStrategy?.onMobileNetAction()
     }
 
     /**

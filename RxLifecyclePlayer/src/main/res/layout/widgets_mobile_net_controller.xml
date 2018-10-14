@@ -1,6 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/mLMobileNet"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/black"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:visibility="gone">
 
-</android.support.constraint.ConstraintLayout>
+    <android.support.v7.widget.AppCompatTextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="@string/player_mobile_net"
+        android:textColor="#ffffff"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/tvContinue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/bg_retry"
+        android:text="@string/continue_play"
+        android:textColor="@android:color/white"
+        android:textSize="14sp" />
+
+</LinearLayout>

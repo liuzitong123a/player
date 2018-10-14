@@ -26,6 +26,8 @@ interface LifecyclePlayer : LifecycleObserver {
 
     fun start()
 
+    fun start(position: Long)
+
     fun pause()
 
     fun isPlaying(): Boolean
@@ -53,4 +55,6 @@ interface LifecyclePlayer : LifecycleObserver {
     fun getVolume(): Int
 
     fun setVolume(volume: Int)
+
+    fun onNetMobileEvent()
 }

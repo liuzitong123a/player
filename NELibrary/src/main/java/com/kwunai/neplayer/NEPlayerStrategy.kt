@@ -245,7 +245,6 @@ class NEPlayerStrategy(
         mMediaPlayer?.start()
         setCurrentState(PlayerState.PLAYING, 0)
         (mMediaPlayer!!.duration > 0).yes { startVodTimer() }
-        subject.onNext(PlayerCommand.Prepared)
     }
 
     /**
@@ -395,6 +394,17 @@ class NEPlayerStrategy(
     }
 
     /**
+     * 保存播放进度
+     */
+    private fun savePlayerState() {
+        mMediaPlayer?.let {
+            (it.duration <= 0).no {
+                skipToPosition = it.currentPosition
+            }
+        }
+    }
+
+    /**
      * 设置播放状态
      */
     private fun setCurrentState(state: PlayerState, causeCode: Int) {
@@ -404,17 +414,6 @@ class NEPlayerStrategy(
             cause = causeCode
         }
         subject.onNext(PlayerCommand.StateChanged(StateInfo(state, cause)))
-    }
-
-    /**
-     * 保存播放进度
-     */
-    private fun savePlayerState() {
-        mMediaPlayer?.let {
-            (it.duration <= 0).no {
-                skipToPosition = it.currentPosition
-            }
-        }
     }
 
     /**
@@ -611,9 +610,13 @@ class NEPlayerStrategy(
      * 网络可用
      */
     private fun onNetworkAvailable() {
-        Log.e("lzt", "network available")
+        Log.e("lzt", "network available:${connectWatcher?.getNetworkType()}")
         netAvailable = true
-        recoverPlayer(true) // 可能需要重启播放器
+        if (connectWatcher?.getNetworkType() == "WIFI") {
+            recoverPlayer(true)
+        } else {
+            subject.onNext(PlayerCommand.MobileNet)
+        }
     }
 
     /**
@@ -640,8 +643,17 @@ class NEPlayerStrategy(
                 savePlayerState()
                 resetPlayer()
                 recoverPlayer(true)
+                subject.onNext(PlayerCommand.WifiNet)
             }
         }
+    }
+
+    /**
+     * 移动网络下点击继续播放
+     */
+    override fun onMobileNetAction() {
+        netAvailable = true
+        recoverPlayer(true)
     }
 
 

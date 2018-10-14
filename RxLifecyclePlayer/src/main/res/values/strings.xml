@@ -2,4 +2,7 @@
     <string name="app_name">RxLifecyclePlayer</string>
     <string name="loading">正在缓冲…</string>
     <string name="player_error">播放错误，请重试。</string>
+    <string name="player_net">播放错误，请重试。</string>
+    <string name="player_mobile_net">播放将消耗流量，是否继续播放？</string>
+    <string name="continue_play">继续播放</string>
 </resources>

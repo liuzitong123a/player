@@ -119,6 +119,10 @@ abstract class VideoController @JvmOverloads constructor(
      */
     abstract fun hideChangeBrightness()
 
+    abstract fun startDismissControllerTimer()
+
+    abstract fun cancelDismissControllerTimer()
+
     /**
      * 重置
      */
@@ -161,7 +165,7 @@ abstract class VideoController @JvmOverloads constructor(
                     var deltaY = y - mDownY
                     val absDeltaX = Math.abs(deltaX)
                     val absDeltaY = Math.abs(deltaY)
-                    if (player.getPlayMode() == PlayerMode.MODE_FULL_SCREEN && !isLock()) {
+                    if (!isLock()) {
                         if (!mChangePosition && !mChangeVolume && !mChangeBrightness) {
                             if (absDeltaX >= mThreshold) {
                                 player.stopTimer()
@@ -179,6 +183,7 @@ abstract class VideoController @JvmOverloads constructor(
                         }
                     }
                     if (mChangePosition) {
+                        cancelDismissControllerTimer()
                         val duration = player.getDuration()
                         val toPosition = (mGestureDownPosition + duration * deltaX / width).toLong()
                         mNewPosition = Math.max(0, Math.min(duration, toPosition))
@@ -211,6 +216,7 @@ abstract class VideoController @JvmOverloads constructor(
                 MotionEvent.ACTION_CANCEL,
                 MotionEvent.ACTION_UP -> {
                     if (mChangePosition) {
+                        startDismissControllerTimer()
                         player.seekTo(mNewPosition)
                         hideChangePosition()
                         player.startTimer()
