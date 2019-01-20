@@ -136,7 +136,7 @@ class NEPlayerStrategy(
                             .Builder(AudioManager.AUDIOFOCUS_GAIN)
                             .setAudioAttributes(audioAttributes)
                             .build()
-                    mAudioManager!!.requestAudioFocus(audioFocusRequest)
+                    mAudioManager!!.requestAudioFocus(audioFocusRequest!!)
                 } else {
                     mAudioManager!!.requestAudioFocus(null, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN)
                 }

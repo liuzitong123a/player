@@ -1,1 +1,1 @@
-include ':app', ':RxLifecyclePlayer', ':NELibrary'
+include ':app', ':player_core', ':player_ne'
