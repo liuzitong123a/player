@@ -50,7 +50,7 @@ open class PlayerController @JvmOverloads constructor(
 
     // 异常页面
     private val mLError by lazy {
-        findViewById<TextView>(R.id.error_view)
+        findViewById<View>(R.id.error_view)
     }
 
     // 视频进度中间显示View
