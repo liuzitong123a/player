@@ -306,11 +306,11 @@ class NEPlayerStrategy(
     override fun stop() {
         Log.e("lzt", "player stop")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            mAudioManager?.abandonAudioFocusRequest(audioFocusRequest)
+            mAudioManager?.abandonAudioFocusRequest(audioFocusRequest!!)
+            audioFocusRequest = null
         } else {
             mAudioManager?.abandonAudioFocus(null)
         }
-        audioFocusRequest = null
         mAudioManager = null
         stopVodTimer()
         renderView?.let {

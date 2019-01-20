@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/mLChangeVolume"
+    android:id="@+id/volume_view"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_centerInParent="true"
@@ -16,7 +16,7 @@
         android:src="@mipmap/ic_player_volume" />
 
     <ProgressBar
-        android:id="@+id/mChangeVolumeProgress"
+        android:id="@+id/pb_volume"
         style="@android:style/Widget.ProgressBar.Horizontal"
         android:layout_width="100dp"
         android:layout_height="2dp"

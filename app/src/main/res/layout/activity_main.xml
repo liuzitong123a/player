@@ -13,7 +13,7 @@
         android:background="@android:color/black"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <com.kwunai.player.core.DefaultLifeVideoPlayer
+    <com.kwunai.player.core.LifeVideoPlayer
         android:id="@+id/mPlayer"
         android:layout_width="match_parent"
         android:layout_height="0dp"

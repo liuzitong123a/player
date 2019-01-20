@@ -14,13 +14,15 @@ import com.kwunai.player.modal.PlayerMode
 import com.kwunai.player.modal.StateInfo
 import com.kwunai.player.modal.VideoScaleMode
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
 
 /**
  * 视频播放器的容器类，用于绑定生命周期，监听状态变化
  */
-class DefaultLifeVideoPlayer @JvmOverloads constructor(
+class LifeVideoPlayer @JvmOverloads constructor(
         context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
-) : FrameLayout(context, attrs, defStyleAttr), LifecyclePlayer {
+) : FrameLayout(context, attrs, defStyleAttr), ILifecyclePlayer {
+
 
     // 当前播放器屏幕的状态
     private var currentPlayMode = PlayerMode.MODE_NORMAL
@@ -28,9 +30,12 @@ class DefaultLifeVideoPlayer @JvmOverloads constructor(
     // 播放核心
     private var playerStrategy: PlayerStrategy? = null
 
+    // 进度监听器
+    private var playerObservable: Disposable? = null
+
     // 视频所需要的播放组件
     private val renderView by lazy {
-        DefaultRenderView(context)
+        RenderView(context)
     }
 
     // 视频播放器容器
@@ -231,15 +236,13 @@ class DefaultLifeVideoPlayer @JvmOverloads constructor(
         playerStrategy?.onMobileNetAction()
     }
 
-    /**
-     * 监听生命周期的onCreate方法
-     */
-    override fun onCreate(lifecycleOwner: LifecycleOwner) {
-        playerStrategy!!.emit.subject()
+
+    override fun dispatchReceiverEvent() {
+        playerObservable = playerStrategy!!.emit.subject()
                 .observeOn(AndroidSchedulers.mainThread())
-                .bindLifecycle(lifecycleOwner)
                 .subscribe { controller.onPlayCommandChanged(it) }
     }
+
 
     /**
      * 监听生命周期的onResume方法
@@ -270,6 +273,10 @@ class DefaultLifeVideoPlayer @JvmOverloads constructor(
      */
     override fun onDestroy(lifecycleOwner: LifecycleOwner) {
         releasePlayer()
+        playerObservable?.let {
+            it.isDisposed.no {
+                it.dispose()
+            }
+        }
     }
-
 }

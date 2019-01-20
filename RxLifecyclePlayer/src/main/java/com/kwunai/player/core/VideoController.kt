@@ -35,12 +35,12 @@ abstract class VideoController @JvmOverloads constructor(
     // 滑动到的新位置
     private var mNewPosition: Long = 0
     // 绑定的播放器
-    protected lateinit var player: LifecyclePlayer
+    protected lateinit var player: ILifecyclePlayer
 
     /**
      * 绑定播放器
      */
-    fun setVideoPlayer(player: LifecyclePlayer) {
+    fun setVideoPlayer(player: ILifecyclePlayer) {
         this.player = player
     }
 

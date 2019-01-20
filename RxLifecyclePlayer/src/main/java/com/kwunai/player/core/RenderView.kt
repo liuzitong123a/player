@@ -9,7 +9,7 @@ import com.kwunai.player.ext.otherwise
 import com.kwunai.player.ext.yes
 import com.kwunai.player.modal.VideoScaleMode
 
-class DefaultRenderView @JvmOverloads constructor(
+class RenderView @JvmOverloads constructor(
         context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : TextureView(context, attrs, defStyleAttr), IRenderView, TextureView.SurfaceTextureListener {
 

@@ -9,9 +9,9 @@ import android.view.View
 import com.bumptech.glide.Glide
 import com.kwunai.neplayer.NEPlayerManager
 import com.kwunai.player.ext.*
-import com.kwunai.player.core.DefaultLifeVideoPlayer
+import com.kwunai.player.core.LifeVideoPlayer
 import com.kwunai.player.core.OnCompletedCallback
-import com.kwunai.player.core.DefaultPlayerController
+import com.kwunai.player.core.PlayerController
 import com.kwunai.rx.player.R
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -20,7 +20,7 @@ class NEVideoActivity : AppCompatActivity(), OnCompletedCallback {
     private val url = ""
     private val coverUrl = ""
 
-    private val player: DefaultLifeVideoPlayer by lazy {
+    private val player: LifeVideoPlayer by lazy {
         mPlayer.apply { lifecycle.addObserver(this) }
     }
 
@@ -30,7 +30,7 @@ class NEVideoActivity : AppCompatActivity(), OnCompletedCallback {
         fitNotchScreen()
         Glide.with(this).load(coverUrl).into(mIvCover)
         player.init(NEPlayerManager.configPlayer(this))
-        val controller = DefaultPlayerController(this)
+        val controller = PlayerController(this)
                 .setVideoTitle("")
                 .setOnCompletedCallback(this)
         player.setController(controller)

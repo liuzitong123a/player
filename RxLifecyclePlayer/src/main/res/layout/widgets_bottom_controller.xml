@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/mLVideoBottom"
+    android:id="@+id/bottom_view"
     android:layout_width="match_parent"
     android:layout_height="40dp"
     android:layout_alignParentBottom="true"
@@ -9,7 +9,7 @@
     android:visibility="gone">
 
     <android.support.v7.widget.AppCompatImageView
-        android:id="@+id/ivPause"
+        android:id="@+id/iv_pause"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
@@ -18,14 +18,14 @@
         android:src="@drawable/selector_video_pause_or_start" />
 
     <android.support.v7.widget.AppCompatTextView
-        android:id="@+id/tvStartTime"
+        android:id="@+id/tv_current"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="#ffffff"
         android:textSize="12sp" />
 
     <android.support.v7.widget.AppCompatSeekBar
-        android:id="@+id/seekBar"
+        android:id="@+id/seek_bar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
@@ -41,14 +41,14 @@
         android:thumbOffset="1dp" />
 
     <android.support.v7.widget.AppCompatTextView
-        android:id="@+id/tvEndTime"
+        android:id="@+id/tv_duration"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="#ffffff"
         android:textSize="12sp" />
 
     <android.support.v7.widget.AppCompatImageButton
-        android:id="@+id/ibFullScreen"
+        android:id="@+id/ib_full"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:background="@null"

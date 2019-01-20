@@ -1,5 +1,6 @@
 package com.kwunai.player.core
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
 import android.os.CountDownTimer
@@ -8,26 +9,17 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.View
 import android.view.ViewParent
+import android.widget.*
 import com.kwunai.player.modal.PlayerMode
-import android.widget.SeekBar
 import com.kwunai.player.R
 import com.kwunai.player.ext.*
 import com.kwunai.player.modal.CauseCode.CODE_VIDEO_STOPPED_AS_NET_UNAVAILABLE
 import com.kwunai.player.modal.PlayerState.*
-import kotlinx.android.synthetic.main.widgets_bottom_controller.view.*
-import kotlinx.android.synthetic.main.widgets_change_brightness_controller.view.*
-import kotlinx.android.synthetic.main.widgets_change_progress_controller.view.*
-import kotlinx.android.synthetic.main.widgets_change_volume_controller.view.*
-import kotlinx.android.synthetic.main.widgets_error_controller.view.*
-import kotlinx.android.synthetic.main.widgets_loading_controller.view.*
-import kotlinx.android.synthetic.main.widgets_mobile_net_controller.view.*
-import kotlinx.android.synthetic.main.widgets_top_controller.view.*
-import kotlinx.android.synthetic.main.widgets_video_controller.view.*
 
 /**
  * 点播视频播放器控制层
  */
-class DefaultPlayerController @JvmOverloads constructor(
+open class PlayerController @JvmOverloads constructor(
         context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0)
     : VideoController(context, attrs, defStyleAttr), View.OnClickListener, SeekBar.OnSeekBarChangeListener {
 
@@ -41,12 +33,127 @@ class DefaultPlayerController @JvmOverloads constructor(
 
     private var onCompletedCallback: OnCompletedCallback? = null
 
+    // 加载UI
+    private val mLoadingView by lazy {
+        findViewById<View>(R.id.loading_view)
+    }
+
+    // 顶部UI
+    private val topLayout by lazy {
+        findViewById<View>(R.id.top_layout)
+    }
+
+    // 底部UI
+    private val mLVideoBottom by lazy {
+        findViewById<View>(R.id.bottom_view)
+    }
+
+    // 异常页面
+    private val mLError by lazy {
+        findViewById<TextView>(R.id.error_view)
+    }
+
+    // 视频进度中间显示View
+    private val mTvChangePosition by lazy {
+        findViewById<TextView>(R.id.tv_change)
+    }
+
+    // 视频进度中心层UI
+    private val mLChangePosition by lazy {
+        findViewById<View>(R.id.change_view)
+    }
+
+    // 视频进度中间显示的ProgressBar
+    private val mChangePositionProgress by lazy {
+        findViewById<ProgressBar>(R.id.pb_change)
+    }
+
+    // 音量控制View
+    private val mLChangeVolume by lazy {
+        findViewById<View>(R.id.volume_view)
+    }
+
+    // 音量控制的进度
+    private val mChangeVolumeProgress by lazy {
+        findViewById<ProgressBar>(R.id.pb_volume)
+    }
+
+    // 触摸亮度改变View
+    private val mLChangeBrightness by lazy {
+        findViewById<View>(R.id.brightness_view)
+    }
+
+    // 亮度改变进度
+    private val mChangeBrightnessProgress by lazy {
+        findViewById<ProgressBar>(R.id.pb_brightness)
+    }
+
+    // 锁屏按钮
+    private val ivLock by lazy {
+        findViewById<ImageView>(R.id.iv_lock)
+    }
+
+    // 暂停按钮
+    private val ivPause by lazy {
+        findViewById<ImageView>(R.id.iv_pause)
+    }
+
+    // 切换全屏半屏按钮
+    private val ibFullScreen by lazy {
+        findViewById<ImageButton>(R.id.ib_full)
+    }
+
+    // 视频进度条
+    private val seekBar by lazy {
+        findViewById<SeekBar>(R.id.seek_bar)
+    }
+
+    // 视频当前时间
+    private val tvStartTime by lazy {
+        findViewById<TextView>(R.id.tv_current)
+    }
+
+    // 视频当前时间
+    private val tvEndTime by lazy {
+        findViewById<TextView>(R.id.tv_duration)
+    }
+
+    // 返回键
+    private val ivTopBack by lazy {
+        findViewById<ImageView>(R.id.iv_back)
+    }
+
+    // 视频标题
+    private val tvTitle by lazy {
+        findViewById<TextView>(R.id.tv_title)
+    }
+
+    // 重试按钮
+    private val ivRetry by lazy {
+        findViewById<ImageView>(R.id.iv_retry)
+    }
+
+    // 移动网提示
+    private val mLMobileNet by lazy {
+        findViewById<View>(R.id.mobile_view)
+    }
+
+    // 移动网是否继续
+    private val tvContinue by lazy {
+        findViewById<TextView>(R.id.tv_continue)
+    }
+
     companion object {
         private const val DEFAULT_DISMISS_TIME = 5000L
     }
 
     init {
-        View.inflate(context, R.layout.widgets_video_controller, this)
+        initView()
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    private fun initView() {
+        View.inflate(context, getLayoutId(), this)
         ibFullScreen.setOnClickListener(this)
         ivPause.setOnClickListener(this)
         ivLock.setOnClickListener(this)
@@ -57,6 +164,11 @@ class DefaultPlayerController @JvmOverloads constructor(
         seekBar.setOnTouchListener(this)
         setOnTouchListener(this)
     }
+
+    protected open fun getLayoutId(): Int {
+        return R.layout.widgets_video_controller
+    }
+
 
     /**
      * 播放器的播放回调发生变化时
@@ -399,7 +511,7 @@ class DefaultPlayerController @JvmOverloads constructor(
     /**
      * 设置视频的title
      */
-    fun setVideoTitle(title: String): DefaultPlayerController {
+    fun setVideoTitle(title: String): PlayerController {
         tvTitle.text = title
         return this
     }
@@ -407,7 +519,7 @@ class DefaultPlayerController @JvmOverloads constructor(
     /**
      * 完成对外层的回调
      */
-    fun setOnCompletedCallback(onCompletedCallback: OnCompletedCallback): DefaultPlayerController {
+    fun setOnCompletedCallback(onCompletedCallback: OnCompletedCallback): PlayerController {
         this.onCompletedCallback = onCompletedCallback
         return this
     }

@@ -12,6 +12,7 @@ object NEPlayerManager {
     /**
      * 初始化SDK,使用播放器时必须先进行初始化才能进行后续操作。
      */
+    @JvmStatic
     fun init(context: Context) {
         val sdkConfig = NESDKConfig()
         sdkConfig.refreshPreLoadDuration = 30 * 60 * 1000
@@ -30,6 +31,7 @@ object NEPlayerManager {
      * @param context   上下文
      * @return 播放器实例对象
      */
+    @JvmStatic
     fun configPlayer(context: Context): PlayerStrategy {
         return NEPlayerStrategy(context)
     }

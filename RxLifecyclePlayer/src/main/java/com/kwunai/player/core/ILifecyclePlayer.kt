@@ -8,10 +8,7 @@ import com.kwunai.player.modal.PlayerMode
 import com.kwunai.player.modal.StateInfo
 import org.jetbrains.annotations.NotNull
 
-interface LifecyclePlayer : LifecycleObserver {
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
-    fun onCreate(@NotNull lifecycleOwner: LifecycleOwner)
+interface ILifecyclePlayer : LifecycleObserver {
 
     @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
     fun onResume(@NotNull lifecycleOwner: LifecycleOwner)
@@ -23,6 +20,8 @@ interface LifecyclePlayer : LifecycleObserver {
 
     @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
     fun onDestroy(@NotNull lifecycleOwner: LifecycleOwner)
+
+    fun dispatchReceiverEvent()
 
     fun start()
 
